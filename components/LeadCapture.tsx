@@ -25,7 +25,7 @@ const LeadCapture: React.FC<LeadCaptureProps> = ({ score, onComplete, onCancel }
       name: formData.name,
       email: formData.email,
       avatarIcon: 'sports_soccer',
-      avatarColor: '#13ec5b'
+      avatarColor: '#f97316'
     };
 
     // Guardar en LocalStorage para sesión actual
@@ -54,7 +54,7 @@ const LeadCapture: React.FC<LeadCaptureProps> = ({ score, onComplete, onCancel }
         <p className="text-white/60 text-lg mb-12">Tus datos han sido registrados en la base de datos oficial. ¿En qué puesto habrás quedado?</p>
         <button 
           onClick={onComplete}
-          className="w-full bg-primary text-background-dark font-black py-5 rounded-2xl shadow-[0_10px_30px_rgba(19,236,91,0.4)] active:scale-95 transition-all uppercase italic text-xl flex items-center justify-center gap-3"
+          className="w-full bg-primary text-background-dark font-black py-5 rounded-2xl shadow-[0_10px_30px_rgba(249,115,22,0.4)] active:scale-95 transition-all uppercase italic text-xl flex items-center justify-center gap-3"
         >
           VER MI POSICIÓN
           <span className="material-symbols-outlined font-black">leaderboard</span>
@@ -71,7 +71,7 @@ const LeadCapture: React.FC<LeadCaptureProps> = ({ score, onComplete, onCancel }
         </div>
         <h1 className="text-4xl font-black italic tracking-tighter text-white uppercase leading-none">
           REGISTRA TU <br/>
-          <span className="text-primary drop-shadow-[0_0_15px_rgba(19,236,91,0.4)]">MARCA</span>
+          <span className="text-primary drop-shadow-[0_0_15px_rgba(249,115,22,0.4)]">MARCA</span>
         </h1>
         <p className="text-white/40 text-xs font-bold uppercase mt-4 tracking-wider">Tu puntaje de {Math.floor(score).toLocaleString()} se guardará en la nube</p>
       </header>
@@ -111,7 +111,7 @@ const LeadCapture: React.FC<LeadCaptureProps> = ({ score, onComplete, onCancel }
             <button 
                 type="submit"
                 disabled={status === 'LOADING'}
-                className={`w-full bg-primary text-background-dark font-black py-5 rounded-2xl shadow-[0_10px_30px_rgba(19,236,91,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-tighter text-xl italic ${status === 'LOADING' ? 'opacity-50 cursor-wait' : ''}`}
+                className={`w-full bg-primary text-background-dark font-black py-5 rounded-2xl shadow-[0_10px_30px_rgba(249,115,22,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-tighter text-xl italic ${status === 'LOADING' ? 'opacity-50 cursor-wait' : ''}`}
             >
                 {status === 'LOADING' ? 'SUBIENDO A FIRESTORE...' : 'ENVIAR A LA NUBE'}
                 <span className="material-symbols-outlined font-black">{status === 'LOADING' ? 'sync' : 'cloud_upload'}</span>

@@ -13,12 +13,12 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, isSyncing }) => {
   const getEmblemaColor = (icon?: string) => {
     const colors: Record<string, string> = {
-      'sports_soccer': '#13ec5b',
+      'sports_soccer': '#f97316',
       'crown': '#f4f425',
       'grade': '#a855f7',
       'bolt': '#f20d0d'
     };
-    return colors[icon || ''] || '#13ec5b';
+    return colors[icon || ''] || '#f97316';
   };
 
   const userColor = getEmblemaColor(user?.emblema);
@@ -71,7 +71,7 @@ const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, isSyncin
                 </span>
             </div>
           )}
-          <h1 className="text-primary tracking-tighter text-[38px] sm:text-[54px] font-black leading-[0.85] italic uppercase drop-shadow-[0_0_15px_rgba(19,236,91,0.3)]">
+          <h1 className="text-primary tracking-tighter text-[38px] sm:text-[54px] font-black leading-[0.85] italic uppercase drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]">
             ¿SABES MÁS QUE EL GENIO?
           </h1>
         </section>
@@ -83,7 +83,7 @@ const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, isSyncin
               <img 
                 src="https://pngimg.com/uploads/football/football_PNG52789.png" 
                 alt="Balón de Fútbol" 
-                className="w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_20px_60px_rgba(19,236,91,0.5)] scale-110 rotate-12 transition-transform hover:rotate-45 duration-700"
+                className="w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_20px_60px_rgba(249,115,22,0.5)] scale-110 rotate-12 transition-transform hover:rotate-45 duration-700"
               />
            </div>
         </section>
@@ -95,7 +95,7 @@ const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, isSyncin
           
           <button 
             onClick={onStart}
-            className="flex w-full items-center justify-center overflow-hidden rounded-full h-14 px-8 bg-primary text-background-dark text-lg font-black tracking-widest shadow-[0_8px_30px_rgba(19,236,91,0.4)] transition-transform active:scale-95 uppercase italic"
+            className="flex w-full items-center justify-center overflow-hidden rounded-full h-14 px-8 bg-primary text-background-dark text-lg font-black tracking-widest shadow-[0_8px_30px_rgba(249,115,22,0.4)] transition-transform active:scale-95 uppercase italic"
           >
             <span className="material-symbols-outlined mr-2 font-black">play_arrow</span>
             EMPEZAR EL RETO

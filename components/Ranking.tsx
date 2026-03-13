@@ -64,7 +64,7 @@ const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userCo
           <button onClick={onBack} className="text-white flex size-8 items-center justify-center active:scale-90 transition-transform">
             <span className="material-symbols-outlined text-xl">arrow_back_ios</span>
           </button>
-          <h1 className="text-primary text-lg font-[900] italic leading-tight tracking-tighter flex-1 text-center uppercase drop-shadow-[0_0_8px_rgba(19,236,91,0.6)]">
+          <h1 className="text-primary text-lg font-[900] italic leading-tight tracking-tighter flex-1 text-center uppercase drop-shadow-[0_0_8px_rgba(245,130,31,0.6)]">
             GENIOS DEL MUNDIAL
           </h1>
           <div className="size-8 flex items-center justify-center">
@@ -78,7 +78,7 @@ const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userCo
         {/* Desafío del Genio */}
         {pointsToTop10 > 0 && (
           <div className="mb-6 bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center gap-4">
-            <div className="bg-primary text-background-dark size-10 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(19,236,91,0.4)]">
+            <div className="bg-primary text-background-dark size-10 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(245,130,31,0.4)]">
               <span className="material-symbols-outlined font-black">trending_up</span>
             </div>
             <div className="flex-1">
@@ -112,8 +112,8 @@ const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userCo
           {top3[0] && (
             <div className="flex flex-col items-center flex-1 -mt-4">
               <div className="relative mb-2">
-                <span className="material-symbols-outlined text-primary text-xl absolute -top-5 left-1/2 -translate-x-1/2 drop-shadow-[0_0_5px_#13ec5b]">emoji_events</span>
-                <div className="w-16 h-16 rounded-full border-2 border-primary bg-white/10 flex items-center justify-center shadow-[0_0_10px_rgba(19,236,91,0.4)]">
+                <span className="material-symbols-outlined text-primary text-xl absolute -top-5 left-1/2 -translate-x-1/2 drop-shadow-[0_0_5px_#f5821f]">emoji_events</span>
+                <div className="w-16 h-16 rounded-full border-2 border-primary bg-white/10 flex items-center justify-center shadow-[0_0_10px_rgba(245,130,31,0.4)]">
                   <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
                 </div>
                 <div className="absolute -bottom-1 -right-1 bg-primary text-background-dark text-[10px] font-black px-1.5 rounded-full">1</div>
@@ -158,11 +158,11 @@ const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userCo
           ))}
 
           {/* Tarjeta del Usuario Actual (Tú) */}
-          <div className="flex items-center gap-3 bg-card-bg px-3 py-3 justify-between rounded-lg border-2 border-primary shadow-[0_0_10px_rgba(19,236,91,0.2)]">
+          <div className="flex items-center gap-3 bg-card-bg px-3 py-3 justify-between rounded-lg border-2 border-primary shadow-[0_0_10px_rgba(245,130,31,0.2)]">
             <div className="flex items-center gap-3">
               <span className="text-primary font-black text-sm italic">??</span>
-              <div className="rounded-full h-10 w-10 border border-primary bg-white/10 flex items-center justify-center" style={{ borderColor: userColor || '#13ec5b' }}>
-                 <span className="material-symbols-outlined text-xl" style={{ color: userColor || '#13ec5b', fontVariationSettings: "'FILL' 1" }}>{userIcon || 'person'}</span>
+              <div className="rounded-full h-10 w-10 border border-primary bg-white/10 flex items-center justify-center" style={{ borderColor: userColor || '#f5821f' }}>
+                 <span className="material-symbols-outlined text-xl" style={{ color: userColor || '#f5821f', fontVariationSettings: "'FILL' 1" }}>{userIcon || 'person'}</span>
               </div>
               <p className="text-white text-sm font-black italic">{userName || 'Tú'}</p>
             </div>

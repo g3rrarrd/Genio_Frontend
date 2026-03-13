@@ -16,7 +16,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, onLogout, onDelete, o
   const [isUpdating, setIsUpdating] = useState(false);
 
   const avatarOptions = [
-    { name: 'Balón', icon: 'sports_soccer', color: '#13ec5b' },
+    { name: 'Balón', icon: 'sports_soccer', color: '#f5821f' },
     { name: 'Corona', icon: 'crown', color: '#f4f425' },
     { name: 'Estrella', icon: 'grade', color: '#a855f7' },
     { name: 'Rayo', icon: 'bolt', color: '#f20d0d' }
@@ -40,7 +40,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, onLogout, onDelete, o
       }
   };
 
-  const currentEmblemaColor = avatarOptions.find(o => o.icon === user.emblema)?.color || '#13ec5b';
+  const currentEmblemaColor = avatarOptions.find(o => o.icon === user.emblema)?.color || '#f5821f';
 
   return (
     <div className="min-h-screen flex flex-col p-6 max-w-md mx-auto relative overflow-hidden bg-background-dark soccer-pattern">
@@ -54,7 +54,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, onLogout, onDelete, o
 
       <main className="flex-1 space-y-8 z-10">
         {/* Card de Jugador */}
-        <div className="relative bg-card-bg rounded-3xl border-2 border-primary overflow-hidden shadow-[0_0_30px_rgba(19,236,91,0.2)]">
+        <div className="relative bg-card-bg rounded-3xl border-2 border-primary overflow-hidden shadow-[0_0_30px_rgba(245,130,31,0.2)]">
           <div className="p-8 pt-12 flex flex-col items-center relative">
             
             {/* AVATAR PRINCIPAL CON OVERLAY DE CARGA */}
@@ -125,7 +125,7 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, onLogout, onDelete, o
                 onClick={() => handleEmblemaSelect(option.icon)}
                 className={`relative flex flex-col items-center p-3 rounded-2xl border transition-all ${
                   user.emblema === option.icon 
-                    ? 'bg-white/10 border-primary shadow-[0_0_15px_rgba(19,236,91,0.2)]' 
+                    ? 'bg-white/10 border-primary shadow-[0_0_15px_rgba(245,130,31,0.2)]' 
                     : 'bg-card-bg border-white/5 active:scale-90'
                 } ${isUpdating ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
               >

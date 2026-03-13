@@ -11,7 +11,7 @@ const LoadingScreen: React.FC = () => {
         {/* Balón animado */}
         <img 
           src="https://pngimg.com/uploads/football/football_PNG52789.png" 
-          className="w-24 h-24 object-contain animate-bounce drop-shadow-[0_0_20px_rgba(19,236,91,0.6)]"
+          className="w-24 h-24 object-contain animate-bounce drop-shadow-[0_0_20px_rgba(245,130,31,0.6)]"
           alt="Cargando..."
         />
       </div>
