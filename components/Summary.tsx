@@ -28,175 +28,101 @@ const Summary: React.FC<SummaryProps> = ({ state, onRestart, onRegister, onRanki
       onRegister();
       return;
     }
-
     audioManager.play('click');
     setSyncStatus('SYNCING');
-    
     const success = await saveScoreToCloud(state.user, state.score);
-    
-    if (success) {
-      setSyncStatus('DONE');
-      audioManager.play('whistle');
-      setTimeout(() => onRanking(), 1000);
-    } else {
-      setSyncStatus('IDLE');
-      alert("Error al sincronizar con Firebase. Intenta de nuevo.");
-    }
-  };
-
-  const handleDownloadImage = async () => {
-    if (!summaryRef.current) return;
-    
-    audioManager.play('click');
-    setIsProcessing(true);
-    
-    try {
-      if (document.fonts) {
-        await document.fonts.ready;
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const dataUrl = await toPng(summaryRef.current, {
-        cacheBust: true,
-        backgroundColor: '#0a0a0a', // Fondo más profundo para la imagen
-        pixelRatio: 2,
-        style: {
-          borderRadius: '0'
-        }
-      });
-      
-      const link = document.createElement('a');
-      link.download = `genio-mundialista-score-${Math.floor(state.score)}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Error al generar la imagen:', err);
-    } finally {
-      setIsProcessing(false);
-    }
+    setSyncStatus(success ? 'DONE' : 'IDLE');
   };
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto relative overflow-hidden bg-[#0a0a0a]">
-      {/* BOTÓN HOME / CERRAR */}
-      <div className="absolute top-6 left-6 z-30">
-        <button 
-          onClick={onHome}
-          className="size-10 rounded-full bg-white/5 border border-white/10 text-white flex items-center justify-center active:scale-90 transition-all backdrop-blur-md"
+    <div className="min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto bg-background-dark overflow-x-hidden">
+      
+      <header className="pt-4 4k:pt-20 flex flex-col items-center gap-4 4k:gap-12 z-10 shrink-0 mb-12 4k:mb-32">
+        <span className="text-[10px] 3xl:text-xl 4k:text-6xl uppercase tracking-[0.4em] text-primary font-black italic">Final del Partido</span>
+        <h1 className="text-3xl 3xl:text-6xl 4k:text-[150px] font-black italic text-white uppercase tracking-tighter">ESTADÍSTICAS</h1>
+      </header>
+
+      <main className="flex-1 flex flex-col items-center z-10 gap-10 4k:gap-32">
+        
+        {/* TARJETA DE RESULTADOS GIGANTE */}
+        <div 
+          ref={summaryRef}
+          className="w-full bg-card-bg rounded-[3rem] 4k:rounded-[8rem] border-2 4k:border-[15px] border-primary/30 p-8 3xl:p-16 4k:p-40 shadow-[0_0_100px_rgba(245,130,31,0.15)] relative overflow-hidden"
         >
-          <span className="material-symbols-outlined text-xl font-bold">close</span>
-        </button>
-      </div>
+          {/* Fondo decorativo de la tarjeta */}
+          <div className="absolute top-0 right-0 p-10 4k:p-32 opacity-5">
+             <span className="material-symbols-outlined text-9xl 4k:text-[500px] text-white">emoji_events</span>
+          </div>
 
-      <div ref={summaryRef} className="flex-1 flex flex-col p-6 bg-[#0a0a0a] soccer-pattern">
-        <header className="pt-12 text-center z-10">
-          {state.user && (
-            <div className="mb-2 inline-block px-4 py-1 bg-[#f5821f] text-black rounded-full shadow-[0_0_15px_rgba(245,130,31,0.4)]">
-               <span className="text-[10px] font-black uppercase italic tracking-tighter">
-                 PARTIDAZO DE: {state.user.identificador}
-               </span>
-            </div>
-          )}
-          <h1 className="text-[#f5821f] text-4xl font-[900] italic tracking-tighter uppercase mb-2 drop-shadow-[0_0_10px_rgba(245,130,31,0.3)]">
-            RETO FINALIZADO
-          </h1>
-          <p className="text-white/60 text-xs font-bold uppercase tracking-widest">Estadísticas de tus 10 jugadas</p>
-        </header>
-
-        <main className="flex-1 flex flex-col justify-center gap-6 z-10 py-8">
-          <div className="w-full relative bg-[#141414] rounded-2xl p-8 border border-[#f5821f]/30 shadow-[0_0_40px_rgba(0,0,0,0.6)] flex flex-col items-center text-center">
-            <div className="text-white/40 text-sm font-bold uppercase tracking-widest mb-1">Puntuación Total</div>
-            <div className="text-[#f5821f] text-6xl font-[900] mb-8 tracking-tighter italic drop-shadow-lg">
-              {Math.floor(state.score).toLocaleString()}
+          <div className="flex flex-col items-center text-center space-y-12 4k:space-y-40">
+            
+            {/* PUNTAJE GIGANTE */}
+            <div className="space-y-2 4k:space-y-10">
+               <span className="text-[10px] 3xl:text-2xl 4k:text-7xl font-black uppercase text-white/30 tracking-[0.3em]">Puntaje Final</span>
+               <div className="text-7xl 3xl:text-9xl 4k:text-[400px] font-black italic text-primary leading-none drop-shadow-[0_0_40px_rgba(245,130,31,0.4)]">
+                {Math.floor(state.score)}
+               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 w-full mb-8">
-              <div className="flex flex-col items-center p-3 rounded-xl bg-white/5 border border-white/5">
-                <span className="text-[#f5821f] text-xl font-black">{correctCount}</span>
-                <span className="text-white/40 text-[8px] font-bold uppercase">Goles</span>
-              </div>
-              <div className="flex flex-col items-center p-3 rounded-xl bg-white/5 border border-white/5">
-                <span className="text-white text-xl font-black">{minutes}:{seconds}</span>
-                <span className="text-white/40 text-[8px] font-bold uppercase">Minutos</span>
-              </div>
-              <div className="flex flex-col items-center p-3 rounded-xl bg-white/5 border border-white/5">
-                <span className="text-[#f4f425] text-xl font-black">{Math.round(accuracy)}%</span>
-                <span className="text-white/40 text-[8px] font-bold uppercase">Precisión</span>
-              </div>
+            {/* GRILLA DE STATS ESCALADA */}
+            <div className="grid grid-cols-3 gap-6 3xl:gap-12 4k:gap-24 w-full">
+               <div className="bg-white/5 rounded-3xl 4k:rounded-[5rem] p-6 3xl:p-10 4k:p-24 border border-white/5 4k:border-[8px] flex flex-col items-center gap-3 4k:gap-10">
+                  <span className="material-symbols-outlined text-primary text-3xl 3xl:text-5xl 4k:text-[150px]">check_circle</span>
+                  <div className="flex flex-col">
+                    <span className="text-xl 3xl:text-4xl 4k:text-[100px] font-black text-white">{correctCount}</span>
+                        <p>""</p>
+                    <span className="text-[8px] 3xl:text-lg 4k:text-5xl font-bold uppercase text-white/30 tracking-widest italic">Goles</span>
+                  </div>
+               </div>
+               <div className="bg-white/5 rounded-3xl 4k:rounded-[5rem] p-6 3xl:p-10 4k:p-24 border border-white/5 4k:border-[8px] flex flex-col items-center gap-3 4k:gap-10">
+                  <span className="material-symbols-outlined text-secondary text-3xl 3xl:text-5xl 4k:text-[150px]">timer</span>
+                  <div className="flex flex-col">
+                    <span className="text-xl 3xl:text-4xl 4k:text-[100px] font-black text-white">{minutes}:{seconds}</span>
+                        <p>""</p>
+                    <span className="text-[8px] 3xl:text-lg 4k:text-5xl font-bold uppercase text-white/30 tracking-widest italic">Tiempo</span>
+                  </div>
+               </div>
+               <div className="bg-white/5 rounded-3xl 4k:rounded-[5rem] p-6 3xl:p-10 4k:p-24 border border-white/5 4k:border-[8px] flex flex-col items-center gap-3 4k:gap-10">
+                  <span className="material-symbols-outlined text-orange-400 text-3xl 3xl:text-5xl 4k:text-[150px]">insights</span>
+                  <div className="flex flex-col">
+                    <span className="text-xl 3xl:text-4xl 4k:text-[100px] font-black text-white">{Math.round(accuracy)}%</span>
+                        <p>""</p>
+                    <span className="text-[8px] 3xl:text-lg 4k:text-5xl font-bold uppercase text-white/30 tracking-widest italic">Efectividad</span>
+                  </div>
+               </div>
             </div>
 
-            <div className="w-full space-y-3">
-               <p className="text-white/30 text-[10px] font-bold uppercase tracking-widest text-left">Mapa del partido</p>
-               <div className="flex gap-1.5 justify-between w-full">
+            {/* VISUALIZADOR DE HISTORIAL GRUESO */}
+            <div className="w-full space-y-4 4k:space-y-12">
+               <div className="flex justify-between items-center text-[10px] 3xl:text-xl 4k:text-6xl font-black uppercase text-white/20 tracking-widest italic px-2">
+                 <span>Historial de Jugadas</span>
+                 <span>{state.questions.length} Total</span>
+               </div>
+               <div className="flex gap-2 3xl:gap-3 4k:gap-8 h-4 3xl:h-6 4k:h-16 w-full">
                   {state.answersHistory.map((ans: boolean, i: number) => (
                     <div 
                       key={i} 
-                      className={`h-2 flex-1 rounded-full ${ans ? 'bg-[#f5821f] shadow-[0_0_8px_rgba(245,130,31,0.6)]' : 'bg-red-500/20 border border-red-500/30'}`}
+                      className={`flex-1 rounded-full ${ans ? 'bg-primary shadow-[0_0_15px_rgba(249,115,22,0.5)]' : 'bg-red-500/20 border border-red-500/30 4k:border-4'}`}
                     ></div>
                   ))}
                </div>
             </div>
-            
-            <div className="mt-8 flex flex-col items-center opacity-20 grayscale">
-                <img 
-                  src="https://pngimg.com/uploads/football/football_PNG52789.png" 
-                  alt="Ball Logo"
-                  className="w-10 h-10 object-contain mb-1"
-                />
-                <span className="text-[8px] font-black uppercase text-white tracking-widest">El Genio Mundialista</span>
-            </div>
           </div>
-        </main>
-      </div>
-
-      <footer className="p-6 pt-0 z-10 space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-            <button 
-                onClick={handleDownloadImage}
-                disabled={isProcessing}
-                className={`flex-1 bg-white/5 hover:bg-white/10 text-white font-bold py-4 rounded-2xl border border-white/10 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-tighter text-xs italic ${isProcessing ? 'opacity-50 cursor-wait' : ''}`}
-            >
-                <span className="material-symbols-outlined text-sm font-black">download</span>
-                IMAGEN
-            </button>
-            <button 
-                onClick={onRanking}
-                className="flex-1 bg-[#f4f425]/10 hover:bg-[#f4f425]/20 text-[#f4f425] font-bold py-4 rounded-2xl border border-[#f4f425]/20 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-tighter text-xs italic"
-            >
-                <span className="material-symbols-outlined text-sm font-black">leaderboard</span>
-                RANKING
-            </button>
         </div>
 
-        <button 
-            onClick={handleSyncScore}
-            disabled={syncStatus === 'SYNCING'}
-            className={`w-full bg-white text-black font-black py-4 rounded-2xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-tighter italic ${syncStatus === 'SYNCING' ? 'opacity-50' : ''}`}
-        >
-            <span className={`material-symbols-outlined font-black ${syncStatus === 'SYNCING' ? 'animate-spin' : ''}`}>
-              {syncStatus === 'DONE' ? 'cloud_done' : 'cloud_upload'}
-            </span>
-            {syncStatus === 'SYNCING' ? 'SINCRONIZANDO...' : state.user ? 'GUARDAR EN LA NUBE' : 'REGISTRAR MI MARCA'}
-        </button>
-
-        <button 
-          onClick={onRestart}
-          className="w-full bg-[#f5821f] text-black font-black py-5 rounded-2xl shadow-[0_10px_30px_rgba(245,130,31,0.4)] active:scale-95 transition-all flex items-center justify-center gap-3 uppercase tracking-tighter text-xl italic"
-        >
-          NUEVO RETO
-          <span className="material-symbols-outlined font-black">refresh</span>
-        </button>
-
-        <button 
-          onClick={onHome}
-          className="w-full py-2 text-white/20 text-[10px] font-black uppercase tracking-[0.3em] active:text-white/50 transition-colors"
-        >
-          SALIR AL INICIO
-        </button>
-      </footer>
+        {/* BOTÓN DE RANKING */}
+        <div className="w-full pb-12 4k:pb-40">
+            <button 
+              onClick={onRanking}
+              className="w-full h-16 3xl:h-24 4k:h-56 bg-primary text-background-dark font-black rounded-3xl 4k:rounded-[5rem] text-lg 3xl:text-3xl 4k:text-8xl italic uppercase tracking-widest shadow-[0_8px_40px_rgba(245,130,31,0.4)] active:scale-95 transition-transform flex items-center justify-center gap-4 4k:gap-12"
+            >
+              <span className="material-symbols-outlined text-3xl 3xl:text-5xl 4k:text-[100px] font-black">leaderboard</span>
+              VER RANKING
+            </button>
+        </div>
+      </main>
     </div>
   );
-}
+};
 
 export default Summary;

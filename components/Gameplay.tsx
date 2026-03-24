@@ -13,6 +13,13 @@ interface GameplayProps {
 }
 
 const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, difficulty, onAnswer, onHome, timeLimit }) => {
+  if (!question) {
+    return (
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <div className="w-16 h-16 4k:w-40 4k:h-40 border-4 4k:border-[12px] border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
   const calculateInitialTime = () => {
     const baseDifficultyMap: Record<Difficulty, number> = {
       'Banca': 15,
@@ -33,7 +40,7 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
   const [isDragging, setIsDragging] = useState(false);
   const touchStart = useRef({ x: 0, y: 0 });
   
-  const SWIPE_THRESHOLD = 90;
+  const SWIPE_THRESHOLD = 150; // Umbral aumentado para pantalla física grande
   const timeProgress = (timeLeft / initialTime) * 100;
 
   useEffect(() => {
@@ -86,31 +93,31 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
   const stampOpacity = Math.min(Math.abs(dragOffset.x) / (SWIPE_THRESHOLD * 0.8), 1);
 
   return (
-    <div className="h-full flex flex-col p-4 overflow-hidden select-none bg-[#0a0a0a]">
-      <header className="shrink-0 pt-2 z-30">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <button onClick={onHome} className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 active:scale-90 transition-all">
-              <span className="material-symbols-outlined text-white text-xl">home</span>
-            </button>
-            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${isUrgent ? 'bg-danger/20 border-danger/40 animate-pulse' : 'bg-card-bg border-white/10'}`}>
-              <span className={`material-symbols-outlined text-sm ${isUrgent ? 'text-danger' : 'text-primary'}`}>timer</span>
-              <span className={`text-sm font-black tracking-tighter ${isUrgent ? 'text-danger' : 'text-white'}`}>{timeLeft}s</span>
+    <div className="min-h-[100dvh] flex flex-col p-6 lg:p-12 3xl:p-20 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto w-full overflow-hidden select-none bg-[#0a0a0a]">
+      
+      {/* Header Escalado */}
+      <header className="shrink-0 pt-4 4k:pt-20 z-30 space-y-6 4k:space-y-20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 4k:gap-16">
+            <div className={`flex items-center gap-3 4k:gap-12 px-6 4k:px-20 py-3 4k:py-12 rounded-full border 4k:border-[10px] transition-colors ${isUrgent ? 'bg-danger/20 border-danger/40 animate-pulse' : 'bg-card-bg border-white/10'}`}>
+              <span className={`material-symbols-outlined text-lg 4k:text-[100px] ${isUrgent ? 'text-danger' : 'text-primary'}`}>timer</span>
+              <span className={`text-xl lg:text-3xl 4k:text-[120px] font-black tracking-tighter ${isUrgent ? 'text-danger' : 'text-white'}`}>{timeLeft}s</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-             <div className="bg-white/5 px-3 py-1 rounded-full border border-white/10">
-                <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{difficulty}</span>
+          <div className="flex items-center gap-6 4k:gap-20">
+             <div className="bg-white/5 px-6 4k:px-20 py-2 4k:py-10 rounded-full border border-white/10 4k:border-[8px]">
+                <span className="text-sm lg:text-xl 4k:text-6xl text-white/40 font-bold uppercase tracking-widest">{difficulty}</span>
              </div>
-             <div className="bg-primary/10 px-3 py-1 rounded-full border border-primary/20 flex items-center gap-1.5">
-               <span className="text-primary font-black text-sm">{streak}</span>
-               <span className="material-symbols-outlined text-primary text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+             <div className="bg-primary/10 px-6 4k:px-20 py-2 4k:py-10 rounded-full border border-primary/20 4k:border-[8px] flex items-center gap-4 4k:gap-10">
+               <span className="text-primary font-black text-xl lg:text-3xl 4k:text-8xl">{streak}</span>
+               <span className="material-symbols-outlined text-primary text-lg 4k:text-[80px]" style={{ fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
              </div>
           </div>
         </div>
         
-        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+        {/* Barra de Tiempo Gruesa para pantalla gigante */}
+        <div className="h-4 4k:h-12 w-full bg-white/5 rounded-full overflow-hidden">
           <div 
             className={`h-full transition-all duration-1000 ease-linear ${isUrgent ? 'bg-danger' : 'bg-primary'}`} 
             style={{ width: `${timeProgress}%` }}
@@ -118,83 +125,89 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
         </div>
       </header>
 
+      {/* Main Container con perspectiva */}
       <main 
-        className="flex-1 flex items-center justify-center perspective-1000"
+        className="flex-1 flex flex-col items-center justify-center gap-12 4k:gap-60 perspective-1000"
         onMouseDown={handleStart} onMouseMove={handleMove} onMouseUp={handleEnd}
         onTouchStart={handleStart} onTouchMove={handleMove} onTouchEnd={handleEnd}
       >
+        {/* Tarjeta de Pregunta Escalada */}
         <div 
-          className={`relative w-full max-w-[300px] aspect-[3/4] transition-transform ${!isDragging ? 'duration-500' : 'duration-0'}`}
+          className={`relative w-full max-w-[500px] lg:max-w-[800px] xl:max-w-[1000px] 4k:max-w-[2000px] aspect-[3/4] transition-transform ${!isDragging ? 'duration-500' : 'duration-0'}`}
           style={{ 
             transform: `translate(${dragOffset.x}px, ${dragOffset.y}px) rotate(${dragOffset.x / 15}deg)`,
             opacity: isAnswering ? 0 : 1
           }}
         >
-          {/* Sellos de Feedback de Swipe */}
+          {/* Sellos de Feedback de Swipe Gigantes */}
           <div 
             className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center"
             style={{ opacity: stampOpacity }}
           >
             {dragOffset.x > 0 ? (
-              <div className="border-8 border-primary text-primary font-black text-4xl px-6 py-2 rounded-2xl -rotate-12 uppercase bg-[#0a0a0a]/90">¡GOL!</div>
+              <div className="border-[12px] 4k:border-[40px] border-primary text-primary font-black text-6xl lg:text-9xl 4k:text-[280px] px-12 4k:px-40 py-6 4k:py-20 rounded-[3rem] 4k:rounded-[8rem] -rotate-12 uppercase bg-[#0a0a0a]/90 shadow-[0_0_100px_rgba(249,115,22,0.4)]">¡GOL!</div>
             ) : (
-              <div className="border-8 border-danger text-danger font-black text-4xl px-6 py-2 rounded-2xl rotate-12 uppercase bg-[#0a0a0a]/90">OFFSIDE</div>
+              <div className="border-[12px] 4k:border-[40px] border-danger text-danger font-black text-6xl lg:text-9xl 4k:text-[280px] px-12 4k:px-40 py-6 4k:py-20 rounded-[3rem] 4k:rounded-[8rem] rotate-12 uppercase bg-[#0a0a0a]/90 shadow-[0_0_100px_rgba(239,68,68,0.4)]">OFFSIDE</div>
             )}
           </div>
 
-          <div className="absolute inset-0 bg-card-bg rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden border border-white/10 flex flex-col">
-            <div className="relative h-[40%] bg-[#0f0f0f] flex items-center justify-center border-b border-white/5">
+          <div className="absolute inset-0 bg-card-bg rounded-[3rem] 4k:rounded-[10rem] shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden border border-white/10 4k:border-[12px] flex flex-col">
+            
+            {/* Cabecera Visual de la Tarjeta */}
+            <div className="relative h-[35%] bg-[#0f0f0f] flex items-center justify-center border-b border-white/5 4k:border-b-[10px]">
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                {/* Glow Naranja en el balón */}
                 <img 
                   src="https://pngimg.com/uploads/football/football_PNG52789.png" 
                   alt="Balón"
-                  className={`w-28 h-28 object-contain drop-shadow-[0_0_30px_rgba(245,130,31,0.5)] transition-transform ${isUrgent ? 'animate-bounce' : 'rotate-12'}`}
+                  className={`w-32 h-32 lg:w-60 lg:h-60 4k:w-[600px] 4k:h-[600px] object-contain drop-shadow-[0_0_80px_rgba(245,130,31,0.6)] transition-transform ${isUrgent ? 'animate-bounce' : 'rotate-12'}`}
                 />
-                <div className="absolute bottom-3 flex items-center gap-2">
-                   <span className="text-white/20 text-[10px] font-black uppercase tracking-[0.2em]">Jugada {index + 1} de {total}</span>
+                <div className="absolute bottom-6 4k:bottom-20 flex items-center gap-4">
+                   <span className="text-white/20 text-sm lg:text-2xl 4k:text-6xl font-black uppercase tracking-[0.3em]">Jugada {index + 1} de {total}</span>
                 </div>
             </div>
             
-            <div className="flex-1 p-8 flex flex-col justify-between items-center text-center">
-              <h2 className={`text-white text-xl font-bold leading-tight italic transition-colors ${isUrgent ? 'text-danger' : ''}`}>
+            {/* Texto de la Pregunta */}
+            <div className="flex-1 p-10 lg:p-20 4k:p-40 flex flex-col justify-between items-center text-center">
+              <h2 className={`text-white text-2xl lg:text-5xl 4k:text-[130px] font-bold leading-tight italic transition-colors 4k:leading-[1.1] ${isUrgent ? 'text-danger' : ''}`}>
                 "{question.pregunta}"
               </h2>
               
-              <div className="w-full grid grid-cols-2 gap-4 pt-6 border-t border-white/5 opacity-40">
-                <div className="flex flex-col items-center gap-1">
-                   <span className="material-symbols-outlined text-danger text-xl">chevron_left</span>
-                   <span className="text-[9px] font-black uppercase text-danger">Falso</span>
+              <div className="w-full grid grid-cols-2 gap-8 pt-12 4k:pt-40 border-t border-white/5 4k:border-t-[10px] opacity-40">
+                <div className="flex flex-col items-center gap-4">
+                   <span className="material-symbols-outlined text-danger text-4xl 4k:text-[160px]">chevron_left</span>
+                   <span className="text-xs lg:text-2xl 4k:text-6xl font-black uppercase text-danger">Falso</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                   <span className="material-symbols-outlined text-primary text-xl">chevron_right</span>
-                   <span className="text-[9px] font-black uppercase text-primary">Verdad</span>
+                <div className="flex flex-col items-center gap-4">
+                   <span className="material-symbols-outlined text-primary text-4xl 4k:text-[160px]">chevron_right</span>
+                   <span className="text-xs lg:text-2xl 4k:text-6xl font-black uppercase text-primary">Verdad</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Botones de Respuesta de Gran Tamaño */}
+        <div className="flex justify-center gap-16 lg:gap-32 4k:gap-[300px] pb-20 4k:pb-40">
+          <button 
+            onClick={() => handleAnswer(false)} 
+            disabled={isAnswering}
+            className="group relative size-24 lg:size-40 4k:size-[400px] rounded-full bg-danger/10 text-danger border border-danger/20 4k:border-[20px] flex items-center justify-center active:scale-75 transition-all disabled:opacity-50"
+          >
+            <div className="absolute inset-0 rounded-full bg-danger blur-2xl opacity-0 group-active:opacity-30 transition-opacity"></div>
+            <span className="material-symbols-outlined text-5xl lg:text-8xl 4k:text-[220px] font-black">close</span>
+          </button>
+          
+          <button 
+            onClick={() => handleAnswer(true)} 
+            disabled={isAnswering}
+            className="group relative size-24 lg:size-40 4k:size-[400px] rounded-full bg-primary/10 text-primary border border-primary/20 4k:border-[20px] flex items-center justify-center active:scale-75 transition-all disabled:opacity-50"
+          >
+            <div className="absolute inset-0 rounded-full bg-primary blur-2xl opacity-0 group-active:opacity-30 transition-opacity"></div>
+            <span className="material-symbols-outlined text-5xl lg:text-8xl 4k:text-[220px] font-black">check</span>
+          </button>
+        </div>
       </main>
 
-      <footer className="shrink-0 pb-10 flex justify-center gap-12">
-        <button 
-          onClick={() => handleAnswer(false)} 
-          disabled={isAnswering}
-          className="group relative size-16 rounded-full bg-danger/10 text-danger border border-danger/20 flex items-center justify-center active:scale-75 transition-all disabled:opacity-50"
-        >
-          <div className="absolute inset-0 rounded-full bg-danger blur-md opacity-0 group-active:opacity-20 transition-opacity"></div>
-          <span className="material-symbols-outlined text-4xl font-black">close</span>
-        </button>
-        
-        <button 
-          onClick={() => handleAnswer(true)} 
-          disabled={isAnswering}
-          className="group relative size-16 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center active:scale-75 transition-all disabled:opacity-50"
-        >
-          <div className="absolute inset-0 rounded-full bg-primary blur-md opacity-0 group-active:opacity-20 transition-opacity"></div>
-          <span className="material-symbols-outlined text-4xl font-black">check</span>
-        </button>
-      </footer>
     </div>
   );
 };

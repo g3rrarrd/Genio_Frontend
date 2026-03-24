@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Difficulty, GameState, User } from './types';
+import { GameState, User } from './types';
 import { QUESTIONS_DATABASE } from './constants';
 import { audioManager } from './audio';
 import Home from './components/Home';
@@ -78,20 +78,13 @@ useEffect(() => {
     audioManager.startBackgroundMusic();
   };
 
-  const startGame = async (difficultyName: Difficulty) => {
+  const startGame = async (overrideUserId?: number) => {
     handleUserInteraction();
     audioManager.play('click');
     setIsLoading(true);
 
-    const categoryMap: Record<Difficulty, number> = {
-      'Banca': 1,
-      'Amateur': 2,
-      'PRO': 3,
-      'Leyenda': 4
-    };
-
-    const categoryId = categoryMap[difficultyName];
-    const userId = state.user?.id_usuarios;
+    const categoryId = 1;
+    const userId = overrideUserId ?? state.user?.id_usuarios;
 
     if (!userId) {
       setState(prev => ({ ...prev, currentScreen: 'AUTH' }));
@@ -115,7 +108,7 @@ useEffect(() => {
       setState(prev => ({
         ...prev,
         currentScreen: 'GAMEPLAY',
-        difficulty: difficultyName,
+        difficulty: 'Banca',
         questions: data.preguntas,
         rondaId: data.ronda_id,
         pointsPerQuestion: Number(data.puntos_categoria) || 150,
@@ -146,7 +139,7 @@ useEffect(() => {
         ...prev,
         lastAnswerCorrect: isCorrect,
         score: isCorrect 
-          ? prev.score + (prev.pointsPerQuestion * (1 + prev.streak * 0.1)) 
+          ? prev.score + 1
           : prev.score,
         streak: isCorrect ? prev.streak + 1 : 0,
         answersHistory: [...prev.answersHistory, isCorrect],
@@ -231,6 +224,33 @@ useEffect(() => {
     setState(prev => ({ ...prev, user, currentScreen: 'HOME' }));
   };
 
+  const handleRegisterAndStart = async (data: { nombre: string; email: string; telefono: string; apostemos: boolean }) => {
+    const baseURL = import.meta.env.VITE_API_URL;
+    const response = await fetch(`${baseURL}usuarios/acceso_directo/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        identificador: data.nombre,
+        email: data.email,
+        telefono: data.telefono,
+        recibir_apostemos: data.apostemos
+      }),
+    });
+    const result = await response.json();
+    if (response.ok || response.status === 201) {
+      const userToSave = { ...result, name: result.identificador, avatarColor: '#f5821f', avatarIcon: 'sports_soccer' };
+      localStorage.setItem('mundialista_user', JSON.stringify(userToSave));
+      audioManager.play('whistle');
+      setState(prev => ({ ...prev, user: userToSave, currentScreen: 'GAMEPLAY' }));
+      await startGame(userToSave.id_usuarios);
+    } else {
+      const msg = result.correo ? 'Este correo ya está registrado' :
+                  result.identificador ? 'Este nombre ya está en uso' :
+                  'Error al registrarse';
+      throw new Error(msg);
+    }
+  };
+
   const handleLogout = () => {
     audioManager.play('click');
     localStorage.removeItem('mundialista_user');
@@ -286,7 +306,7 @@ useEffect(() => {
 
   return (
     <div 
-      className="h-[100dvh] w-screen bg-background-dark text-white font-sans soccer-pattern overflow-hidden relative"
+      className="min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative"
       onClick={handleUserInteraction}
     >
       {isLoading && <LoadingScreen />}
@@ -296,10 +316,12 @@ useEffect(() => {
           onStart={() => { 
             handleUserInteraction();
             audioManager.play('click'); 
-            setState(prev => ({ ...prev, currentScreen: 'DIFFICULTY' })); 
+            startGame();
           }} 
           onLogin={goToAuth}
           onProfile={goToProfile}
+          onRegisterAndStart={handleRegisterAndStart}
+          isSyncing={isSyncingUser}
         />
       )}
 
@@ -379,6 +401,7 @@ useEffect(() => {
           userColor={state.user?.avatarColor}
           onBack={state.endTime ? () => setState(prev => ({ ...prev, currentScreen: 'SUMMARY' })) : resetToHome} 
           onProfile={state.user ? goToProfile : goToAuth}
+          onLogout={handleLogout}
         />
       )}
     </div>

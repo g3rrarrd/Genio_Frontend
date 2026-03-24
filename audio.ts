@@ -2,11 +2,11 @@
 const SOUNDS = {
   click: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
   correct: 'https://assets.mixkit.co/active_storage/sfx/2020/2020-preview.mp3',
-  incorrect: 'https://assets.mixkit.co/active_storage/sfx/1120/1120-preview.mp3',
+  incorrect: 'https://assets.mixkit.co/active_storage/sfx/946/946-preview.mp3',
   tick: 'https://assets.mixkit.co/active_storage/sfx/2563/2563-preview.mp3',
   whistle: 'https://assets.mixkit.co/active_storage/sfx/1118/1118-preview.mp3',
   // Música de fondo: Un tema upbeat estilo estadio/deportes
-  bgMusic: 'https://assets.mixkit.co/music/preview/mixkit-sport-fashion-hip-hop-617.mp3',
+  bgMusic: 'https://assets.mixkit.co/music/443/443.mp3',
 };
 
 class AudioManager {

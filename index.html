@@ -14,6 +14,15 @@
         tailwind.config = {
             darkMode: 'class',
             theme: {
+                screens: {
+                    'sm': '640px',
+                    'md': '768px',
+                    'lg': '1024px',
+                    'xl': '1280px',
+                    '2xl': '1536px',
+                    '3xl': '1920px',
+                    '4k': '2560px',
+                },
                 extend: {
                     colors: {
                         "primary": "#f5821f",
@@ -32,19 +41,23 @@
         }
     </script>
     <style>
+        html, body {
+            min-height: 100%;
+            width: 100%;
+        }
         body {
             background-color: #102216;
             margin: 0;
             padding: 0;
-            height: 100dvh;
-            width: 100vw;
-            overflow: hidden;
-            position: fixed;
+            min-height: 100dvh;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
         }
         #root {
-            height: 100%;
+            min-height: 100dvh;
             width: 100%;
         }
         .soccer-pattern {

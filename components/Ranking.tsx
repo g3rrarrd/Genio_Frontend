@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Agregamos los hooks
+import React, { useState, useEffect, useRef } from 'react';
 
 interface RankingProps {
   userScore: number;
@@ -8,6 +8,7 @@ interface RankingProps {
   userId: number | null;
   onBack: () => void;
   onProfile: () => void;
+  onLogout: () => void;
 }
 
 interface PlayerRank {
@@ -18,15 +19,15 @@ interface PlayerRank {
   avatarColor?: string;
 }
 
-const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userColor, onBack, onProfile, userId }) => {
+const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userColor, onBack, onProfile, onLogout, userId }) => {
   const [leaderboard, setLeaderboard] = useState<PlayerRank[]>([]);
+  const [userRank, setUserRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchRanking = async () => {
       try {
         const baseURL = import.meta.env.VITE_API_URL;
-
         const url = userId 
                   ? `${baseURL}usuarios/ranking/?user_id=${userId}`
                   : `${baseURL}usuarios/ranking/`;
@@ -35,157 +36,120 @@ const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userCo
         const data = await response.json();
         
         setLeaderboard(data.top_20 || []);
+        if (data.user_rank) setUserRank(data.user_rank);
       } catch (error) {
         console.error("Error cargando el ranking:", error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchRanking();
   }, [userId]);
 
-  // Definimos las constantes basadas en el estado dinámico
-  const top3 = leaderboard.slice(0, 3);
-  const otherPlayers = leaderboard.slice(3);
-  const top10Score = leaderboard.length >= 10 ? leaderboard[9].score : 0;
-  const pointsToTop10 = top10Score > userScore ? Math.ceil(top10Score - userScore) : 0;
-
-  if (loading) return (
-    <div className="h-full flex flex-col items-center justify-center bg-background-dark">
-      <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
-      <p className="italic text-primary font-bold animate-pulse">CARGANDO ESTADIO...</p>
-    </div>
-  );
-
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-background-dark">
-      <header className="shrink-0 bg-[#102216]/90 backdrop-blur-md border-b border-primary/10 z-20">
-        <div className="flex items-center p-4 justify-between">
-          <button onClick={onBack} className="text-white flex size-8 items-center justify-center active:scale-90 transition-transform">
-            <span className="material-symbols-outlined text-xl">arrow_back_ios</span>
-          </button>
-          <h1 className="text-primary text-lg font-[900] italic leading-tight tracking-tighter flex-1 text-center uppercase drop-shadow-[0_0_8px_rgba(245,130,31,0.6)]">
-            GENIOS DEL MUNDIAL
-          </h1>
-          <div className="size-8 flex items-center justify-center">
-            <span className="material-symbols-outlined text-white/20 text-xl">share</span>
-          </div>
+    <div className="min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto bg-background-dark soccer-pattern">
+      
+      {/* Header Escalado */}
+      <header className="pt-4 4k:pt-20 flex items-center justify-between mb-10 4k:mb-32 z-10 shrink-0">
+        <button onClick={onBack} className="size-12 lg:size-20 4k:size-48 flex items-center justify-center rounded-full bg-white/5 border border-white/10 4k:border-[10px] backdrop-blur-md active:scale-90 transition-all">
+          <span className="material-symbols-outlined text-white text-2xl 4k:text-[100px]">arrow_back</span>
+        </button>
+        <div className="flex flex-col items-center">
+            <span className="text-[10px] 4k:text-5xl font-black uppercase text-primary tracking-[0.4em] italic leading-none mb-2">Global</span>
+            <h1 className="text-2xl 3xl:text-5xl 4k:text-[130px] font-black italic uppercase text-white tracking-tighter">Ranking</h1>
         </div>
+        <button onClick={onProfile} className="size-12 lg:size-20 4k:size-48 flex items-center justify-center rounded-full bg-primary/10 border border-primary/20 4k:border-[10px] active:scale-90 transition-all">
+          <span className="material-symbols-outlined text-primary text-2xl 4k:text-[100px]" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+        </button>
       </header>
 
-      <main className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4 pb-32">
-        
-        {/* Desafío del Genio */}
-        {pointsToTop10 > 0 && (
-          <div className="mb-6 bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center gap-4">
-            <div className="bg-primary text-background-dark size-10 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(245,130,31,0.4)]">
-              <span className="material-symbols-outlined font-black">trending_up</span>
+      <main className="flex-1 flex flex-col min-h-0 z-10">
+        <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 4k:space-y-12">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-40 4k:py-80 gap-8">
+               <div className="size-16 4k:size-48 border-4 4k:border-[20px] border-primary border-t-transparent rounded-full animate-spin"></div>
+               <span className="text-white/20 text-xs 4k:text-6xl font-black uppercase tracking-widest">Consultando VAR...</span>
             </div>
-            <div className="flex-1">
-              <p className="text-white/60 text-[10px] font-black uppercase tracking-widest">Desafío del Genio</p>
-              <p className="text-white text-xs font-bold">
-                ¡Estás a <span className="text-primary">{pointsToTop10} pts</span> de entrar al <span className="italic">Top 10 Global</span>!
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Podio Compacto */}
-        <div className="flex items-end justify-center gap-2 mb-8 h-48 mt-4">
-          {/* SEGUNDO LUGAR */}
-          {top3[1] && (
-            <div className="flex flex-col items-center flex-1">
-              <div className="relative mb-2">
-                <div className="w-12 h-12 rounded-full border border-slate-400 bg-white/5 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-slate-400 text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+          ) : (
+            leaderboard.map((player, index) => {
+              const isUser = player.name === userName;
+              const rank = player.rank || index + 1;
+              
+              return (
+                <div 
+                  key={index}
+                  className={`flex items-center justify-between p-5 4k:p-12 rounded-3xl 4k:rounded-[5rem] border-2 4k:border-[10px] transition-all h-24 4k:h-44 ${
+                    isUser ? 'bg-primary/10 border-primary shadow-[0_0_40px_rgba(249,115,22,0.2)]' : 'bg-card-bg border-white/5'
+                  }`}
+                >
+                  <div className="flex items-center gap-6 4k:gap-16">
+                    <div className="w-8 4k:w-24 text-center">
+                      <span className={`text-lg 4k:text-7xl font-black italic ${rank <= 3 ? 'text-primary' : 'text-white/20'}`}>
+                        #{rank}
+                      </span>
+                    </div>
+                    
+                    <div 
+                      className="size-12 4k:size-[120px] rounded-full flex items-center justify-center bg-white/5 border 4k:border-8 border-white/10 shadow-inner"
+                      style={{ backgroundColor: `${player.avatarColor || '#f5821f'}20` }}
+                    >
+                      <span className="material-symbols-outlined text-2xl 4k:text-[70px]" style={{ color: player.avatarColor || '#f5821f', fontVariationSettings: "'FILL' 1" }}>
+                        {player.avatarIcon || 'person'}
+                      </span>
+                    </div>
+                    
+                    <span className={`text-sm 4k:text-6xl font-black uppercase truncate max-w-[120px] 4k:max-w-[800px] ${isUser ? 'text-white' : 'text-white/70'}`}>
+                      {player.name}
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-col items-end">
+                    <span className="text-primary text-lg 4k:text-7xl font-black italic leading-none">{Math.floor(player.score)}</span>
+                    <span className="text-[8px] 4k:text-4xl font-bold text-white/20 uppercase tracking-widest">Puntos</span>
+                  </div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 bg-slate-400 text-background-dark text-[8px] font-bold px-1 rounded-full">2</div>
-              </div>
-              <p className="text-[8px] font-bold text-center truncate w-full text-white/80">{top3[1].name}</p>
-              <div className="w-full h-12 bg-card-bg rounded-t-lg mt-1 border-t border-x border-white/10 flex items-center justify-center">
-                <span className="text-[9px] font-black text-primary">{Math.floor(top3[1].score)}</span>
-              </div>
-            </div>
-          )}
-
-          {/* PRIMER LUGAR */}
-          {top3[0] && (
-            <div className="flex flex-col items-center flex-1 -mt-4">
-              <div className="relative mb-2">
-                <span className="material-symbols-outlined text-primary text-xl absolute -top-5 left-1/2 -translate-x-1/2 drop-shadow-[0_0_5px_#f5821f]">emoji_events</span>
-                <div className="w-16 h-16 rounded-full border-2 border-primary bg-white/10 flex items-center justify-center shadow-[0_0_10px_rgba(245,130,31,0.4)]">
-                  <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
-                </div>
-                <div className="absolute -bottom-1 -right-1 bg-primary text-background-dark text-[10px] font-black px-1.5 rounded-full">1</div>
-              </div>
-              <p className="text-[10px] font-black text-center truncate w-full uppercase text-white">{top3[0].name}</p>
-              <div className="w-full h-20 bg-card-bg rounded-t-lg mt-1 border-t border-x border-primary flex items-center justify-center">
-                <span className="text-sm font-black text-primary">{Math.floor(top3[0].score)}</span>
-              </div>
-            </div>
-          )}
-
-          {/* TERCER LUGAR */}
-          {top3[2] && (
-            <div className="flex flex-col items-center flex-1">
-              <div className="relative mb-2">
-                <div className="w-12 h-12 rounded-full border border-[#b87333] bg-white/5 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[#b87333] text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
-                </div>
-                <div className="absolute -bottom-1 -right-1 bg-[#b87333] text-background-dark text-[8px] font-bold px-1 rounded-full">3</div>
-              </div>
-              <p className="text-[8px] font-bold text-center truncate w-full text-white/80">{top3[2].name}</p>
-              <div className="w-full h-10 bg-card-bg rounded-t-lg mt-1 border-t border-x border-white/5 flex items-center justify-center">
-                <span className="text-[9px] font-black text-primary">{Math.floor(top3[2].score)}</span>
-              </div>
-            </div>
+              );
+            })
           )}
         </div>
 
-        {/* Lista de Jugadores */}
-        <div className="space-y-2 pb-4">
-          {otherPlayers.map((player, idx) => (
-            <div key={idx} className="flex items-center gap-3 bg-card-bg px-3 py-2 justify-between rounded-lg border border-white/5">
-              <div className="flex items-center gap-3">
-                <span className="text-white/40 font-bold text-xs w-4 italic">{player.rank || idx + 4}</span>
-                <div className="rounded-full h-8 w-8 border border-white/10 bg-white/5 flex items-center justify-center">
-                   <span className="material-symbols-outlined text-white/20 text-lg">person</span>
+        {/* Sección "TU POSICIÓN" Flotante */}
+        <div className="mt-6 4k:mt-20 space-y-4 4k:space-y-12">
+          {userRank && (
+            <div className="bg-primary p-6 4k:p-16 rounded-[2.5rem] 4k:rounded-[6rem] shadow-[0_-20px_60px_rgba(249,115,22,0.3)] flex items-center justify-between">
+              <div className="flex items-center gap-6 4k:gap-20">
+                <div className="flex flex-col items-center justify-center bg-background-dark/20 size-14 4k:size-40 rounded-2xl 4k:rounded-[3rem]">
+                  <span className="text-background-dark text-xs 4k:text-5xl font-black leading-none">POS</span>
+                  {/* CAMBIO AQUÍ: Si userRank es un objeto, usa userRank.rank */}
+                  <span className="text-background-dark text-2xl 4k:text-8xl font-black italic">
+                    #{typeof userRank === 'object' ? (userRank as any).rank : userRank}
+                  </span>
                 </div>
-                <p className="text-white text-xs font-semibold">{player.name}</p>
+                <div className="flex flex-col">
+                    <span className="text-background-dark/60 text-[10px] 4k:text-5xl font-black uppercase tracking-tighter">Estás en el podio</span>
+                    <span className="text-background-dark text-lg 4k:text-7xl font-black uppercase italic leading-none">{userName}</span>
+                </div>
               </div>
-              <p className="text-primary text-xs font-black italic">{Math.floor(player.score)} pts</p>
+              <div className="text-right">
+                <span className="block text-background-dark text-2xl 4k:text-9xl font-black italic leading-none">
+                  {/* Si el objeto trae el score, puedes usarlo también */}
+                  {typeof userRank === 'object' ? Math.floor((userRank as any).score) : Math.floor(userScore)}
+                </span>
+                <span className="text-background-dark/60 text-[10px] 4k:text-4xl font-black uppercase">Tu mejor marca</span>
+              </div>
             </div>
-          ))}
+          )}
 
-          {/* Tarjeta del Usuario Actual (Tú) */}
-          <div className="flex items-center gap-3 bg-card-bg px-3 py-3 justify-between rounded-lg border-2 border-primary shadow-[0_0_10px_rgba(245,130,31,0.2)]">
-            <div className="flex items-center gap-3">
-              <span className="text-primary font-black text-sm italic">??</span>
-              <div className="rounded-full h-10 w-10 border border-primary bg-white/10 flex items-center justify-center" style={{ borderColor: userColor || '#f5821f' }}>
-                 <span className="material-symbols-outlined text-xl" style={{ color: userColor || '#f5821f', fontVariationSettings: "'FILL' 1" }}>{userIcon || 'person'}</span>
-              </div>
-              <p className="text-white text-sm font-black italic">{userName || 'Tú'}</p>
-            </div>
-            <p className="text-primary text-sm font-black italic">{Math.floor(userScore)} pts</p>
-          </div>
+          <button
+            onClick={onLogout}
+            className="w-full h-16 4k:h-56 bg-danger/5 border-2 4k:border-[10px] border-danger/20 text-danger font-black rounded-3xl 4k:rounded-[5rem] flex items-center justify-center gap-4 4k:gap-16 active:scale-95 transition-all mb-10 4k:mb-40"
+          >
+            <span className="text-sm 4k:text-7xl uppercase italic tracking-widest">Abandonar Concentración</span>
+            <span className="material-symbols-outlined text-2xl 4k:text-[100px]">logout</span>
+          </button>
         </div>
       </main>
-
-      {/* Footer Navigation */}
-      <div className="shrink-0 p-4 pb-8 z-20">
-        <div className="bg-card-bg/80 backdrop-blur-2xl border border-primary/20 rounded-full h-14 flex items-center justify-around px-4 shadow-2xl">
-          <button onClick={onBack} className="flex flex-col items-center justify-center text-white/50">
-            <span className="material-symbols-outlined text-xl">home</span>
-          </button>
-          <button className="flex flex-col items-center justify-center text-primary relative">
-            <span className="material-symbols-outlined text-xl fill-1" style={{ fontVariationSettings: "'FILL' 1" }}>leaderboard</span>
-            <div className="absolute -bottom-1 w-1 h-1 rounded-full bg-primary"></div>
-          </button>
-          <button onClick={onProfile} className="flex flex-col items-center justify-center text-white/50">
-            <span className="material-symbols-outlined text-xl">person</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
