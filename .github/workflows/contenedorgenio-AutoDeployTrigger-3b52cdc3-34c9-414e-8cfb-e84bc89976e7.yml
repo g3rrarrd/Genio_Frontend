@@ -35,7 +35,7 @@ jobs:
           containerAppName: contenedorgenio
           resourceGroup: NetworkWatcherRG
           # Definimos la imagen correctamente usando el ACR
-          imageToBuild: testcontainern.azurecr.io/contenedorgenio:${{ github.sha }}
+          imageToBuild: genio.azurecr.io/contenedorgenio:${{ github.sha }}
           buildArguments: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
           environmentVariables: |
