@@ -1,24 +1,29 @@
-# Etapa 1: Construcción
+# Etapa 1: Construcción (Build)
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copiar archivos de dependencias para aprovechar el caché de Docker
+# Declarar los argumentos de construcción (Build Args)
+# Esto permite que GitHub Actions pase la URL de la API durante el build
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+# Instalar dependencias
 COPY package*.json ./
 RUN npm install
 
-# Copiar el resto del código y construir
+# Copiar el código fuente y compilar
 COPY . .
 RUN npm run build
 
 # Etapa 2: Servidor de producción (Nginx)
 FROM nginx:stable-alpine
 
-# Copiar los archivos construidos desde la etapa anterior
-# Nota: Si usas Vite, la carpeta de salida es 'dist'. Si usas CRA, es 'build'.
+# Copiar los archivos estáticos generados por Vite (carpeta dist)
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copiar una configuración personalizada de Nginx para manejar rutas de React (SPA)
+# Copiar configuración de Nginx para manejar rutas de React (SPA)
+# Asegúrate de tener el archivo nginx.conf en tu repo
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
