@@ -12,7 +12,7 @@ const Feedback: React.FC<FeedbackProps> = ({ isCorrect, question, onNext, points
   const respuestaTexto = question.respuesta_correcta ? 'VERDADERO' : 'FALSO';
 
   return (
-    <div className={`min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto relative overflow-x-hidden transition-colors duration-500 ${isCorrect ? 'bg-background-dark' : 'bg-[#221010]'}`}>
+    <div className={`min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto relative overflow-x-hidden transition-colors duration-500 ${isCorrect ? 'bg-[#102210]' : 'bg-[#221010]'}`} >
       
       {/* Decoración de fondo escalada */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
@@ -26,13 +26,15 @@ const Feedback: React.FC<FeedbackProps> = ({ isCorrect, question, onNext, points
         {/* ICONO Y ESTADO GIGANTE */}
         <div className="flex flex-col items-center text-center space-y-6 4k:space-y-20">
           <div className={`size-32 lg:size-56 3xl:size-72 4k:size-[700px] rounded-full flex items-center justify-center border-4 4k:border-[20px] shadow-2xl transition-transform duration-700 scale-110 ${isCorrect ? 'bg-primary/10 border-primary shadow-primary/20' : 'bg-danger/10 border-danger shadow-danger/20'}`}>
-            <span className="material-symbols-outlined text-7xl lg:text-[10rem] 3xl:text-[12rem] 4k:text-[500px] font-black italic">
-              {isCorrect ? 'sports_soccer' : 'close'}
-            </span>
+            {isCorrect ? (
+              <img src="../utils/icono victoria.svg" alt="Correcto" className="size-20 lg:size-40 3xl:size-56 4k:size-[500px] object-contain" />
+            ) : (
+              <img src="../utils/icono fallaste.svg" alt="Fallaste" className="size-20 lg:size-40 3xl:size-56 4k:size-[500px] object-contain" />
+            )}
           </div>
 
           <div className="space-y-2 4k:space-y-10">
-            <h1 className={`text-5xl lg:text-7xl 3xl:text-9xl 4k:text-[250px] font-black italic uppercase tracking-tighter ${isCorrect ? 'text-primary' : 'text-danger'}`}>
+            <h1 className={`text-5xl lg:text-7xl 3xl:text-9xl 4k:text-[250px] font-black italic uppercase tracking-tighter ${isCorrect ? 'text-green-400' : 'text-danger'}`}>
               {isCorrect ? '¡GOLAZO!' : 'OFFSIDE'}
             </h1>
             <p className="text-white/40 text-xs 3xl:text-2xl 4k:text-6xl font-bold uppercase tracking-[0.4em]">
@@ -50,7 +52,7 @@ const Feedback: React.FC<FeedbackProps> = ({ isCorrect, question, onNext, points
           <div className="space-y-8 4k:space-y-24 text-center">
             <div className="space-y-4 4k:space-y-12">
                 <span className="text-[10px] 3xl:text-xl 4k:text-5xl font-black uppercase text-white/30 tracking-[0.2em]">La respuesta era</span>
-                <div className={`text-2xl 3xl:text-5xl 4k:text-[120px] font-black italic uppercase ${isCorrect ? 'text-primary' : 'text-white'}`}>
+                <div className={`text-2xl 3xl:text-5xl 4k:text-[120px] font-black italic uppercase ${isCorrect ? 'text-green-400' : 'text-white'}`}>
                     {respuestaTexto}
                 </div>
             </div>
@@ -63,7 +65,7 @@ const Feedback: React.FC<FeedbackProps> = ({ isCorrect, question, onNext, points
 
             {/* MARCADOR DE PUNTOS ESCALADO */}
             <div className="flex items-center justify-center gap-4 4k:gap-16 px-8 4k:px-24 py-4 4k:py-16 bg-white/5 rounded-full border border-white/10 4k:border-[8px] mx-auto w-fit">
-              <span className={`material-symbols-outlined text-2xl 3xl:text-4xl 4k:text-[100px] ${isCorrect ? 'text-primary' : 'text-danger'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+              <span className={`material-symbols-outlined text-2xl 3xl:text-4xl 4k:text-[100px] ${isCorrect ? 'text-green-400' : 'text-danger'}`} style={{ fontVariationSettings: "'FILL' 1" }}>
                 {isCorrect ? 'bolt' : 'error'}
               </span>
               <span className="text-white text-base 3xl:text-3xl 4k:text-7xl font-black uppercase tracking-widest">

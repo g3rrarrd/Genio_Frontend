@@ -308,6 +308,7 @@ useEffect(() => {
     <div 
       className="min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative"
       onClick={handleUserInteraction}
+      style={{ backgroundImage: "url('../utils/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
     >
       {isLoading && <LoadingScreen />}
       {state.currentScreen === 'HOME' && (

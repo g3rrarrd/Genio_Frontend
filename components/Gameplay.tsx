@@ -93,7 +93,7 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
   const stampOpacity = Math.min(Math.abs(dragOffset.x) / (SWIPE_THRESHOLD * 0.8), 1);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col p-6 lg:p-12 3xl:p-20 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto w-full overflow-hidden select-none bg-[#0a0a0a]">
+    <div className="min-h-[100dvh] flex flex-col p-6 lg:p-12 3xl:p-20 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto w-full overflow-hidden select-none bg-[#0a0a0a]" style={{ backgroundImage: "url('../utils/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       
       {/* Header Escalado */}
       <header className="shrink-0 pt-4 4k:pt-20 z-30 space-y-6 4k:space-y-20">
@@ -105,7 +105,7 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
             </div>
           </div>
           
-          <div className="flex items-center gap-6 4k:gap-20">
+          <div className="flex items-center gap-6 4k:gap-20" style={{ backgroundImage: "url('../utils/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
              <div className="bg-white/5 px-6 4k:px-20 py-2 4k:py-10 rounded-full border border-white/10 4k:border-[8px]">
                 <span className="text-sm lg:text-xl 4k:text-6xl text-white/40 font-bold uppercase tracking-widest">{difficulty}</span>
              </div>
@@ -157,12 +157,12 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
             <div className="relative h-[35%] bg-[#0f0f0f] flex items-center justify-center border-b border-white/5 4k:border-b-[10px]">
                 <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                 <img 
-                  src="https://pngimg.com/uploads/football/football_PNG52789.png" 
+                  src="../utils/icon general.svg" 
                   alt="Balón"
                   className={`w-32 h-32 lg:w-60 lg:h-60 4k:w-[600px] 4k:h-[600px] object-contain drop-shadow-[0_0_80px_rgba(245,130,31,0.6)] transition-transform ${isUrgent ? 'animate-bounce' : 'rotate-12'}`}
                 />
                 <div className="absolute bottom-6 4k:bottom-20 flex items-center gap-4">
-                   <span className="text-white/20 text-sm lg:text-2xl 4k:text-6xl font-black uppercase tracking-[0.3em]">Jugada {index + 1} de {total}</span>
+                   <span className="text-white/20 text-sm lg:text-2xl 4k:text-6xl font-black uppercase tracking-[0.3em]"></span>
                 </div>
             </div>
             
@@ -194,7 +194,7 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
             className="group relative size-24 lg:size-40 4k:size-[400px] rounded-full bg-danger/10 text-danger border border-danger/20 4k:border-[20px] flex items-center justify-center active:scale-75 transition-all disabled:opacity-50"
           >
             <div className="absolute inset-0 rounded-full bg-danger blur-2xl opacity-0 group-active:opacity-30 transition-opacity"></div>
-            <span className="material-symbols-outlined text-5xl lg:text-8xl 4k:text-[220px] font-black">close</span>
+            <img src="../utils/icono f.svg" alt="Falso" className="size-12 lg:size-20 4k:size-[200px] object-contain" />
           </button>
           
           <button 
@@ -203,7 +203,7 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
             className="group relative size-24 lg:size-40 4k:size-[400px] rounded-full bg-primary/10 text-primary border border-primary/20 4k:border-[20px] flex items-center justify-center active:scale-75 transition-all disabled:opacity-50"
           >
             <div className="absolute inset-0 rounded-full bg-primary blur-2xl opacity-0 group-active:opacity-30 transition-opacity"></div>
-            <span className="material-symbols-outlined text-5xl lg:text-8xl 4k:text-[220px] font-black">check</span>
+            <img src="../utils/icono v.svg" alt="Verdadero" className="size-12 lg:size-20 4k:size-[200px] object-contain" />
           </button>
         </div>
       </main>
