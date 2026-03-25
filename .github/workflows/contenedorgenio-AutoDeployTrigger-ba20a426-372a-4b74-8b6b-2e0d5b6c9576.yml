@@ -1,0 +1,42 @@
+name: Trigger auto deployment for contenedorgenio
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**'
+      - '.github/workflows/contenedorgenio-AutoDeployTrigger-ba20a426-372a-4b74-8b6b-2e0d5b6c9576.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v3 # Actualizado a v3
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.CONTENEDORGENIO_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTENEDORGENIO_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTENEDORGENIO_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          dockerfilePath: ./Dockerfile # Asegúrate de que la ruta sea correcta
+          registryUrl: genio.azurecr.io
+          registryUsername: ${{ secrets.CONTENEDORGENIO_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTENEDORGENIO_REGISTRY_PASSWORD }}
+          containerAppName: contenedorgenio
+          resourceGroup: NetworkWatcherRG
+          imageToBuild: genio.azurecr.io/contenedorgenio:${{ github.sha }}
+          # PASO CRÍTICO: Inyectar la variable de entorno como argumento de construcción
+          buildArguments: |
+            VITE_API_URL=${{ secrets.VITE_API_URL }}
