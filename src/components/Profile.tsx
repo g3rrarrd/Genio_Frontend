@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { audioManager } from '../audio';
+import { audioManager } from '../../audio';
 
 interface ProfileProps {
   user: any; // Aquí vendrán los datos de tbl_usuario

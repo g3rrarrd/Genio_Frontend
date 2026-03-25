@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { GameState, User } from './types';
-import { QUESTIONS_DATABASE } from './constants';
-import { audioManager } from './audio';
+import { GameState, User } from '../types';
+import { QUESTIONS_DATABASE } from '../constants';
+import { audioManager } from '../audio';
 import Home from './components/Home';
 import DifficultySelector from './components/DifficultySelector';
 import Gameplay from './components/Gameplay';
@@ -308,7 +308,7 @@ useEffect(() => {
     <div 
       className="min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative"
       onClick={handleUserInteraction}
-      style={{ backgroundImage: "url('../utils/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
+      style={{ backgroundImage: "url('./public/images/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
     >
       {isLoading && <LoadingScreen />}
       {state.currentScreen === 'HOME' && (

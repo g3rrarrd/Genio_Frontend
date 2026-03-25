@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { toPng } from 'https://esm.sh/html-to-image';
-import { audioManager } from '../audio';
-import { saveScoreToCloud } from '../firebase';
+import { audioManager } from '../../audio';
+import { saveScoreToCloud } from '../../firebase';
 
 interface SummaryProps {
   state: any; 
@@ -35,7 +35,7 @@ const Summary: React.FC<SummaryProps> = ({ state, onRestart, onRegister, onRanki
   };
 
   return (
-    <div className="min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto bg-background-dark overflow-x-hidden" style={{ backgroundImage: "url('../utils/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+    <div className="min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto bg-background-dark overflow-x-hidden" style={{ backgroundImage: "url('/images/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       
       <header className="pt-4 4k:pt-20 flex flex-col items-center gap-4 4k:gap-12 z-10 shrink-0 mb-12 4k:mb-32">
         <span className="text-[10px] 3xl:text-xl 4k:text-6xl uppercase tracking-[0.4em] text-primary font-black italic">Final del Partido</span>

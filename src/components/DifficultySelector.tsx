@@ -1,6 +1,6 @@
 import React from 'react';
-import { Difficulty } from '../types';
-import { DIFFICULTY_CONFIG } from '../constants';
+import { Difficulty } from '../../types';
+import { DIFFICULTY_CONFIG } from '../../constants';
 
 interface DifficultySelectorProps {
   onSelect: (difficulty: Difficulty) => void;

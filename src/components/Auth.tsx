@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { audioManager } from '../audio';
-import { User } from '../types';
+import { audioManager } from '../../audio';
+import { User } from '../../types';
 
 interface RegisterProps {
   onSuccess: (user: User) => void;

@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
-import { audioManager } from '../audio';
-import { saveScoreToCloud } from '../firebase';
-import { User } from '../types';
+import { audioManager } from '../../audio';
+import { saveScoreToCloud } from '../../firebase';
+import { User } from '../../types';
 
 interface LeadCaptureProps {
   score: number;
