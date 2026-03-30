@@ -5,7 +5,6 @@ const SOUNDS = {
   incorrect: 'https://assets.mixkit.co/active_storage/sfx/946/946-preview.mp3',
   tick: 'https://assets.mixkit.co/active_storage/sfx/2563/2563-preview.mp3',
   whistle: 'https://assets.mixkit.co/active_storage/sfx/1118/1118-preview.mp3',
-  // Música de fondo: Un tema upbeat estilo estadio/deportes
   bgMusic: 'https://assets.mixkit.co/music/443/443.mp3',
 };
 

@@ -5,9 +5,8 @@ export interface Question {
   id: number;
   pregunta: string;
   respuesta: boolean;
-  dificultad: Difficulty;
   explicacion: string;
-  tema?: string;
+  categoria: number; // Always 1 for design-scoped questions
 }
 
 export interface User {
@@ -16,10 +15,25 @@ export interface User {
   description?: string;
   avatarColor?: string;
   avatarIcon?: string;
+  identificador?: string;
+  emblema?: string;
+  id_usuarios?: number;
 }
 
 export interface GameState {
-  currentScreen: 'HOME' | 'DIFFICULTY' | 'GAMEPLAY' | 'FEEDBACK' | 'SUMMARY' | 'LEAD_CAPTURE' | 'RANKING' | 'AUTH' | 'PROFILE';
+  currentScreen:
+    | 'HOME'
+    | 'DIFFICULTY'
+    | 'GAMEPLAY'
+    | 'FEEDBACK'
+    | 'SUMMARY'
+    | 'LEAD_CAPTURE'
+    | 'RANKING'
+    | 'AUTH'
+    | 'PROFILE'
+    | 'CODIGO'
+    | 'DISENIO'
+    | 'MENU_CONTROL';
   difficulty: Difficulty | null;
   currentQuestionIndex: number;
   questions: Question[];

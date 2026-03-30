@@ -8,9 +8,13 @@ interface HomeProps {
   onProfile: () => void;
   onRegisterAndStart: (data: { nombre: string; email: string; telefono: string; apostemos: boolean }) => Promise<void>;
   isSyncing ?: boolean;
+  logoImage?: string;
+  appTitle?: string;
+  appSubtitle?: string;
+  appTagline?: string;
 }
 
-const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, onRegisterAndStart, isSyncing }) => {
+const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, onRegisterAndStart, isSyncing, logoImage, appTitle, appSubtitle, appTagline }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalForm, setModalForm] = useState({ nombre: '', email: '', telefono: '', apostemos: false });
   const [modalLoading, setModalLoading] = useState(false);
@@ -69,14 +73,14 @@ const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, onRegist
   const userColor = getEmblemaColor(user?.emblema);
   
   return (
-    <div className="min-h-[100dvh] flex flex-col justify-between p-3 py-4 sm:p-4 sm:py-6 lg:p-6 lg:py-8 3xl:p-10 3xl:py-12 4k:p-24 4k:py-32 max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl 3xl:max-w-4xl 4k:max-w-[2200px] mx-auto w-full" style={{ backgroundImage: "url('/images/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+    <div className="min-h-[100dvh] flex flex-col justify-between p-3 py-4 sm:p-4 sm:py-6 lg:p-6 lg:py-8 3xl:p-10 3xl:py-12 4k:p-24 4k:py-32 max-w-md lg:max-w-lg xl:max-w-xl 2xl:max-w-2xl 3xl:max-w-4xl 4k:max-w-[2200px] mx-auto w-full" style={{ backgroundImage: "var(--design-background-image, url('/images/fondo 3.jpg'))", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       <header className="grid grid-cols-3 items-center px-1 sm:px-2 z-10 shrink-0">
         
         <div></div>
 
         <div className="flex flex-col items-center 4k:gap-4">
-          <span className="text-[7px] sm:text-[8px] lg:text-[10px] 3xl:text-sm 4k:text-4xl uppercase tracking-[0.2em] text-primary font-bold">The Ultimate Challenge</span>
-          <h2 className="text-white text-[10px] sm:text-xs lg:text-sm 3xl:text-lg 4k:text-6xl font-bold leading-tight tracking-tight">EL GENIO MUNDIALISTA</h2>
+          <span className="text-[7px] sm:text-[8px] lg:text-[10px] 3xl:text-sm 4k:text-4xl uppercase tracking-[0.2em] text-primary font-bold">{appSubtitle || 'The Ultimate Challenge'}</span>
+          <h2 className="text-white text-[10px] sm:text-xs lg:text-sm 3xl:text-lg 4k:text-6xl font-bold leading-tight tracking-tight">{appTitle || 'EL GENIO MUNDIALISTA'}</h2>
         </div>
 
         {/* BOTÓN DE PERFIL CON CARGA DINÁMICA */}
@@ -118,7 +122,9 @@ const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, onRegist
             </div>
           )}
           <h1 className="text-primary tracking-tighter text-[38px] sm:text-[54px] lg:text-[64px] xl:text-[72px] 3xl:text-[96px] 4k:text-[220px] font-black leading-[0.85] italic uppercase drop-shadow-[0_0_15px_rgba(249,115,22,0.3)] 4k:drop-shadow-[0_0_60px_rgba(249,115,22,0.4)]">
-            ¿SABES MÁS<br />QUE EL GENIO?
+            {(appTagline || '¿SABES MÁS\nQUE EL GENIO?').split('\n').map((line, i, arr) => (
+              <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+            ))}
           </h1>
         </section>
 
@@ -127,7 +133,7 @@ const Home: React.FC<HomeProps> = ({ user, onStart, onLogin, onProfile, onRegist
            <div className="w-full h-full bg-gradient-to-b from-primary/10 to-transparent rounded-full flex items-center justify-center border border-white/5 4k:border-8 relative">
               <span className="material-symbols-outlined text-primary/40 text-2xl 4k:text-[100px] absolute top-4 4k:top-20 left-1/4 animate-pulse">auto_awesome</span>
               <img 
-                src="/images/icon general.svg" 
+                src={logoImage || '/images/icon general.svg'}
                 alt="Balón de Fútbol" 
                 className="w-44 h-44 sm:w-52 sm:h-52 lg:w-64 lg:h-64 xl:w-72 xl:h-72 3xl:w-96 3xl:h-96 4k:w-[900px] 4k:h-[900px] object-contain drop-shadow-[0_20px_60px_rgba(249,115,22,0.5)] scale-110 rotate-12 transition-transform hover:rotate-45 duration-700"
               />

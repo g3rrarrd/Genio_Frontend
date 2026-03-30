@@ -6,9 +6,11 @@ interface FeedbackProps {
   question: Question;
   onNext: () => void;
   pointsEarned: number;
+  iconVictoriaImage?: string;
+  iconFallasteImage?: string;
 }
 
-const Feedback: React.FC<FeedbackProps> = ({ isCorrect, question, onNext, pointsEarned }) => {
+const Feedback: React.FC<FeedbackProps> = ({ isCorrect, question, onNext, pointsEarned, iconVictoriaImage, iconFallasteImage }) => {
   const respuestaTexto = question.respuesta_correcta ? 'VERDADERO' : 'FALSO';
 
   return (
@@ -27,9 +29,9 @@ const Feedback: React.FC<FeedbackProps> = ({ isCorrect, question, onNext, points
         <div className="flex flex-col items-center text-center space-y-6 4k:space-y-20">
           <div className={`size-32 lg:size-56 3xl:size-72 4k:size-[700px] rounded-full flex items-center justify-center border-4 4k:border-[20px] shadow-2xl transition-transform duration-700 scale-110 ${isCorrect ? 'bg-primary/10 border-primary shadow-primary/20' : 'bg-danger/10 border-danger shadow-danger/20'}`}>
             {isCorrect ? (
-              <img src="/images/icono victoria.svg" alt="Correcto" className="size-20 lg:size-40 3xl:size-56 4k:size-[500px] object-contain" />
+              <img src={iconVictoriaImage || '/images/icono victoria.svg'} alt="Correcto" className="size-20 lg:size-40 3xl:size-56 4k:size-[500px] object-contain" />
             ) : (
-              <img src="/images/icono fallaste.svg" alt="Fallaste" className="size-20 lg:size-40 3xl:size-56 4k:size-[500px] object-contain" />
+              <img src={iconFallasteImage || '/images/icono fallaste.svg'} alt="Fallaste" className="size-20 lg:size-40 3xl:size-56 4k:size-[500px] object-contain" />
             )}
           </div>
 

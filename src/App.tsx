@@ -13,12 +13,41 @@ import Ranking from './components/Ranking';
 import Auth from './components/Auth';
 import Profile from './components/Profile';
 import LoadingScreen from './components/LoadingScreen';
+import Codigo from './components/Codigo';
+import Disenio from './components/Disenio';
+import MenuControl from './components/menuControl';
+import {
+  clearActiveDesignCode,
+  getActiveDesignCode,
+  getActiveDesignConfig,
+  getDesignByCode,
+  setActiveDesignCode,
+} from './components/adminDesignStore';
+
+const hexToRgbString = (hex: string) => {
+  const normalized = hex.replace('#', '').trim();
+  const validHex = normalized.length === 3
+    ? normalized.split('').map((char) => `${char}${char}`).join('')
+    : normalized;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(validHex)) {
+    return '245, 130, 31';
+  }
+
+  const r = Number.parseInt(validHex.slice(0, 2), 16);
+  const g = Number.parseInt(validHex.slice(2, 4), 16);
+  const b = Number.parseInt(validHex.slice(4, 6), 16);
+
+  return `${r}, ${g}, ${b}`;
+};
 
 interface ExtendedGameState extends GameState {
   answersHistory: boolean[];
   pointsPerQuestion: number;
   timeLimit: number
 }
+
+const ADMIN_PIN = import.meta.env.VITE_ADMIN_PIN || '2026GENIO';
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +67,23 @@ const App: React.FC = () => {
     timeLimit: 15,
   });
   const [isSyncingUser, setIsSyncingUser] = useState(false);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [secretTapCount, setSecretTapCount] = useState(0);
+  const [activeDesignCode, setActiveDesignCodeState] = useState('');
+  const [activeDesign, setActiveDesignState] = useState(getActiveDesignConfig);
+
+  const backgroundImage = activeDesign?.backgroundImage || '/images/fondo 3.jpg';
+  const logoImage = activeDesign?.logoImage || '/images/icon general.svg';
+  const appFontFamily = activeDesign?.fontFamily || 'Plus Jakarta Sans, sans-serif';
+  const appTitle = activeDesign?.appTitle;
+  const appSubtitle = activeDesign?.appSubtitle;
+  const appTagline = activeDesign?.appTagline;
+  const iconVictoriaImage = activeDesign?.iconVictoriaImage;
+  const iconFallasteImage = activeDesign?.iconFallasteImage;
+  const iconVImage = activeDesign?.iconVImage;
+  const iconFImage = activeDesign?.iconFImage;
+  const primaryGlow = activeDesign?.primaryColor || '#f5821f';
+  const primaryRgb = hexToRgbString(primaryGlow);
 
 const refreshUserData = async () => {
   if (!state.user?.id_usuarios) return;
@@ -74,6 +120,17 @@ useEffect(() => {
   }
 }, []);
 
+useEffect(() => {
+  setActiveDesignCodeState(getActiveDesignCode());
+}, []);
+
+useEffect(() => {
+  const adminScreens = ['CODIGO', 'DISENIO', 'MENU_CONTROL'];
+  if (!adminUnlocked && adminScreens.includes(state.currentScreen)) {
+    setState((prev) => ({ ...prev, currentScreen: 'HOME' }));
+  }
+}, [adminUnlocked, state.currentScreen]);
+
   const handleUserInteraction = () => {
     audioManager.startBackgroundMusic();
   };
@@ -98,7 +155,8 @@ useEffect(() => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id_usuario: userId,
-          id_categoria: categoryId
+          id_categoria: categoryId,
+          ...(activeDesignCode ? { codigo: activeDesignCode } : {}),
         }),
       });
 
@@ -220,6 +278,61 @@ useEffect(() => {
     setState(prev => ({ ...prev, currentScreen: 'PROFILE' }));
   };
 
+  const goToDisenio = () => {
+    audioManager.play('click');
+    setState((prev) => ({ ...prev, currentScreen: 'DISENIO' }));
+  };
+
+  const goToCodigo = () => {
+    audioManager.play('click');
+    setState((prev) => ({ ...prev, currentScreen: 'CODIGO' }));
+  };
+
+  const goToMenuControl = () => {
+    audioManager.play('click');
+    setState((prev) => ({ ...prev, currentScreen: 'MENU_CONTROL' }));
+  };
+
+  const handleApplyDesignCode = (inputCode: string) => {
+    const code = inputCode.trim().toUpperCase();
+
+    if (!code) {
+      clearActiveDesignCode();
+      setActiveDesignCodeState('');
+      setActiveDesignState(null);
+      return { ok: true, message: 'Diseno por defecto aplicado.' };
+    }
+
+    const design = getDesignByCode(code);
+    if (!design) {
+      return { ok: false, message: 'Codigo no valido. Se mantiene el diseno actual.' };
+    }
+
+    setActiveDesignCode(code);
+    setActiveDesignCodeState(code);
+    setActiveDesignState(design);
+    return { ok: true, message: `Diseno ${code} aplicado globalmente.` };
+  };
+
+  const handleSecretAdminTap = () => {
+    const nextValue = secretTapCount + 1;
+    if (nextValue < 7) {
+      setSecretTapCount(nextValue);
+      return;
+    }
+
+    setSecretTapCount(0);
+    const pin = window.prompt('Acceso admin oculto. Ingresa PIN:');
+
+    if ((pin || '').trim() === ADMIN_PIN) {
+      setAdminUnlocked(true);
+      goToDisenio();
+      return;
+    }
+
+    alert('PIN invalido.');
+  };
+
   const handleAuthSuccess = (user: User) => {
     setState(prev => ({ ...prev, user, currentScreen: 'HOME' }));
   };
@@ -233,7 +346,8 @@ useEffect(() => {
         identificador: data.nombre,
         email: data.email,
         telefono: data.telefono,
-        recibir_apostemos: data.apostemos
+        recibir_apostemos: data.apostemos,
+        ...(activeDesignCode ? { codigo_diseno: activeDesignCode } : {}),
       }),
     });
     const result = await response.json();
@@ -306,9 +420,19 @@ useEffect(() => {
 
   return (
     <div 
-      className="min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative"
+      className="design-scope min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative"
       onClick={handleUserInteraction}
-      style={{ backgroundImage: "url('/images/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
+      style={{
+        '--design-primary': primaryGlow,
+        '--design-primary-rgb': primaryRgb,
+        '--design-background-image': `url('${backgroundImage}')`,
+        fontFamily: appFontFamily,
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.45)), url('${backgroundImage}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        boxShadow: `inset 0 0 120px ${primaryGlow}25`,
+      } as React.CSSProperties}
     >
       {isLoading && <LoadingScreen />}
       {state.currentScreen === 'HOME' && (
@@ -323,6 +447,10 @@ useEffect(() => {
           onProfile={goToProfile}
           onRegisterAndStart={handleRegisterAndStart}
           isSyncing={isSyncingUser}
+          logoImage={logoImage}
+          appTitle={appTitle}
+          appSubtitle={appSubtitle}
+          appTagline={appTagline}
         />
       )}
 
@@ -362,7 +490,10 @@ useEffect(() => {
           onAnswer={handleAnswer}
           onHome={resetToHome}
           // PASA EL TIEMPO AQUÍ:
-          timeLimit={state.timeLimit} 
+          timeLimit={state.timeLimit}
+          logoImage={logoImage}
+          iconVImage={iconVImage}
+          iconFImage={iconFImage}
         />
       )}
       
@@ -372,6 +503,8 @@ useEffect(() => {
           question={state.questions[state.currentQuestionIndex]}
           onNext={nextQuestion}
           pointsEarned={state.pointsPerQuestion * (1 + (state.streak - 1) * 0.1)}
+          iconVictoriaImage={iconVictoriaImage}
+          iconFallasteImage={iconFallasteImage}
         />
       )}
       
@@ -405,6 +538,40 @@ useEffect(() => {
           onLogout={handleLogout}
         />
       )}
+
+      {state.currentScreen === 'DISENIO' && adminUnlocked && (
+        <Disenio
+          onBack={resetToHome}
+          onGoToCodigo={goToCodigo}
+          onGoToMenuControl={goToMenuControl}
+        />
+      )}
+
+      {state.currentScreen === 'CODIGO' && adminUnlocked && (
+        <Codigo
+          onBack={resetToHome}
+          onGoToDisenio={goToDisenio}
+          onGoToMenuControl={goToMenuControl}
+          currentCode={activeDesignCode}
+          onApplyCode={handleApplyDesignCode}
+        />
+      )}
+
+      {state.currentScreen === 'MENU_CONTROL' && adminUnlocked && (
+        <MenuControl
+          onBack={resetToHome}
+          onGoToDisenio={goToDisenio}
+          onGoToCodigo={goToCodigo}
+          onDesignUpdated={() => setActiveDesignState(getActiveDesignConfig())}
+        />
+      )}
+
+      <button
+        onClick={handleSecretAdminTap}
+        aria-label="admin-hidden-trigger"
+        className="absolute bottom-2 right-2 w-6 h-6 opacity-0"
+        title="admin-hidden-trigger"
+      />
     </div>
   );
 };

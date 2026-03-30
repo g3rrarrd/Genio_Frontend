@@ -48,7 +48,7 @@ const Ranking: React.FC<RankingProps> = ({ userScore, userName, userIcon, userCo
   }, [userId]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto bg-background-dark soccer-pattern" style={{ backgroundImage: "url('/images/fondo 3.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+    <div className="min-h-[100dvh] flex flex-col p-6 3xl:p-16 4k:p-40 max-w-md lg:max-w-2xl xl:max-w-4xl 2xl:max-w-5xl 3xl:max-w-7xl 4k:max-w-[2200px] mx-auto bg-background-dark soccer-pattern" style={{ backgroundImage: "var(--design-background-image, url('/images/fondo 3.jpg'))", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       
       {/* Header Escalado */}
       <header className="pt-4 4k:pt-20 flex items-center justify-between mb-10 4k:mb-32 z-10 shrink-0">
