@@ -22,6 +22,9 @@ import {
   getActiveDesignConfig,
   getDesignByCode,
   setActiveDesignCode,
+  getQuestionsByCode,
+  getQuestionsByCodeOffline,
+  updateQuestionsByCode,
 } from './components/adminDesignStore';
 import { db } from './db';
 
@@ -131,8 +134,88 @@ useEffect(() => {
   }
 }, [adminUnlocked, state.currentScreen]);
 
-  const handleUserInteraction = () => {
-    audioManager.startBackgroundMusic();
+const handleUserInteraction = async (overrideUserId?: number) => {
+    audioManager.play('click');
+    setIsLoading(true);
+
+    const categoryId = 1;
+    const userId = overrideUserId ?? state.user?.id_usuarios;
+    const activeCode = getActiveDesignCode();
+
+    if (!userId) {
+      setState(prev => ({ ...prev, currentScreen: 'AUTH' }));
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const baseURL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${baseURL}rondas/iniciar_juego/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_usuario: userId,
+          id_categoria: categoryId,
+          ...(activeCode ? { codigo: activeCode } : {}),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Éxito: Sincronizamos con local para el futuro
+        if (activeCode && data.preguntas) {
+          await updateQuestionsByCode(activeCode, data.preguntas);
+        }
+
+        setState(prev => ({
+          ...prev,
+          currentScreen: 'GAMEPLAY',
+          difficulty: 'Banca',
+          questions: data.preguntas,
+          rondaId: data.ronda_id,
+          pointsPerQuestion: Number(data.puntos_categoria) || 150,
+          timeLimit: Number(data.tiempo_categoria) || 10,
+          currentQuestionIndex: 0,
+          score: 0,
+          streak: 0,
+          startTime: Date.now(),
+          answersHistory: []
+        }));
+      } else {
+        throw new Error(data.error || "Error al iniciar el juego");
+      }
+    } catch (error) {
+        console.warn("Fallo de red, iniciando modo offline con lógica local...");
+
+        if (activeCode) {
+            // Usamos la nueva función con lógica aleatoria
+            const localQuestions = await getQuestionsByCodeOffline(activeCode);
+
+            if (localQuestions.length >= 10) {
+                setState(prev => ({
+                    ...prev,
+                    currentScreen: 'GAMEPLAY',
+                    difficulty: 'Banca',
+                    questions: localQuestions, // Ya vienen mezcladas y limitadas a 10
+                    rondaId: 0, // 0 indica ronda pendiente de sincronizar
+                    pointsPerQuestion: 150,
+                    timeLimit: 10,
+                    currentQuestionIndex: 0,
+                    score: 0,
+                    streak: 0,
+                    startTime: Date.now(),
+                    answersHistory: []
+                }));
+            } else {
+                alert(`No hay suficientes preguntas guardadas (${localQuestions.length}/10). Por favor, conéctate una vez para sincronizar.`);
+            }
+        } else {
+            alert("Error de conexión y no hay un código de diseño activo.");
+        }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const startGame = async (overrideUserId?: number) => {
@@ -482,18 +565,20 @@ useEffect(() => {
 
   return (
     <div 
-      className="design-scope min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative"
-      onClick={handleUserInteraction}
+      className="design-scope min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative transition-all duration-500"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleUserInteraction();
+      }}
       style={{
         '--design-primary': primaryGlow,
         '--design-primary-rgb': primaryRgb,
         '--design-background-image': `url('${backgroundImage}')`,
         fontFamily: appFontFamily,
-        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.45)), url('${backgroundImage}')`,
+        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.5)), url('${backgroundImage}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        boxShadow: `inset 0 0 120px ${primaryGlow}25`,
+        backgroundAttachment: 'fixed', // Mantiene el fondo quieto al scrollear
+        boxShadow: `inset 0 0 120px ${primaryGlow}33`,
       } as React.CSSProperties}
     >
       {isLoading && <LoadingScreen />}

@@ -16,6 +16,7 @@ import {
 	fetchQuestionsByCodeFromApi,
 	syncDesignByCodeToApi,
 	getQuestionsByCode,
+	updateQuestionsByCode,
 } from './adminDesignStore';
 
 interface MenuControlProps {
@@ -143,7 +144,7 @@ const MenuControl: React.FC<MenuControlProps> = ({ onBack, onGoToDisenio, onGoTo
 		}
 
 		// Intentar cargar desde backend y hacer fallback a local si falla
-		let filteredQuestions = getQuestionsByCode(code);
+		let filteredQuestions = await getQuestionsByCode(code);
 		try {
 			filteredQuestions = await fetchQuestionsByCodeFromApi(code);
 		} catch {
@@ -223,14 +224,24 @@ const MenuControl: React.FC<MenuControlProps> = ({ onBack, onGoToDisenio, onGoTo
 		}
 
 		try {
-			const inserted = await insertQuestionsByCodeInApi(selectedCode, questions);
-			setQuestions(inserted);
-			setFeedback(
-				`${inserted.length} pregunta${inserted.length !== 1 ? 's' : ''} insertada${inserted.length !== 1 ? 's' : ''} para ${selectedCode}.`,
-			);
-			setRefreshTick((prev) => prev + 1);
+			const insertedApi = await insertQuestionsByCodeInApi(selectedCode, questions);
+			
+			await updateQuestionsByCode(selectedCode, insertedApi);
+			
+			setQuestions(insertedApi);
+			setFeedback(`${insertedApi.length} preguntas sincronizadas y guardadas en local.`);
 		} catch (error) {
-			setFeedback((error as Error).message || `No se pudieron insertar las preguntas para "${selectedCode}".`);
+			console.warn("Fallo de API, procediendo a guardado local forzado...", error);
+			
+			const currentLocal = await getQuestionsByCode(selectedCode);
+			const combined = [...currentLocal, ...questions];
+			
+			await updateQuestionsByCode(selectedCode, combined);
+			
+			setQuestions(combined);
+			setFeedback('Guardado localmente (Sin conexión al servidor).');
+		} finally {
+			setRefreshTick((prev) => prev + 1);
 		}
 	};
 
@@ -246,19 +257,23 @@ const MenuControl: React.FC<MenuControlProps> = ({ onBack, onGoToDisenio, onGoTo
 			return;
 		}
 
-		if (!window.confirm(`¿Reemplazar TODAS las preguntas de "${selectedCode}" con las ${questions.length} preguntas actuales? Esta acción borra las existentes.`)) {
-			return;
-		}
+		if (!window.confirm(`¿Reemplazar todas las preguntas de "${selectedCode}"?`)) return;
 
 		try {
-			const replaced = await replaceQuestionsByCodeInApi(selectedCode, questions);
-			setQuestions(replaced);
-			setFeedback(
-				`${replaced.length} pregunta${replaced.length !== 1 ? 's' : ''} reemplazada${replaced.length !== 1 ? 's' : ''} en ${selectedCode}.`,
-			);
-			setRefreshTick((prev) => prev + 1);
+			const replacedApi = await replaceQuestionsByCodeInApi(selectedCode, questions);
+			
+			await updateQuestionsByCode(selectedCode, replacedApi);
+			
+			setQuestions(replacedApi);
+			setFeedback(`Reemplazo exitoso en servidor y local.`);
 		} catch (error) {
-			setFeedback((error as Error).message || `No se pudieron reemplazar las preguntas de "${selectedCode}".`);
+			console.warn("Error de red. Reemplazando solo en base de datos local.");
+			
+			await updateQuestionsByCode(selectedCode, questions);
+			
+			setFeedback(`Guardado solo en local (Error de comunicación con API).`);
+		} finally {
+			setRefreshTick((prev) => prev + 1);
 		}
 	};
 

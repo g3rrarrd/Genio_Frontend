@@ -279,38 +279,65 @@ const queuePendingSyncByDesign = (design: DesignConfig) => {
   writePendingSync(next);
 };
 
-export const getQuestionsByCode = (inputCode: string): Question[] => {
+export const updateQuestionsByCode = async (inputCode: string, questions: Question[]) => {
+  const code = normalizeCode(inputCode);
+  if (!code) return null;
+
+  let design = await getDesignByCode(code);
+  
+  if (!design) {
+    design = {
+      code: code,
+      name: `Diseño ${code}`,
+      primaryColor: '#f5821f',
+      fontFamily: 'Inter',
+      backgroundImage: '',
+      questions: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+  }
+
+  const updatedDesign: DesignConfig = {
+    ...design,
+    questions: questions,
+    updatedAt: Date.now(),
+  };
+
+  return await saveDesignConfig(updatedDesign);
+};
+
+export const getQuestionsByCode = async (inputCode: string): Promise<Question[]> => {
   const code = normalizeCode(inputCode);
   if (!code) return [];
 
-  const design = getDesignByCode(code);
+  const design = await getDesignByCode(code);
   if (!design) return [];
 
   return Array.isArray(design.questions) ? design.questions : [];
 };
 
-export const updateQuestionsByCode = (inputCode: string, questions: Question[]) => {
+export const getQuestionsByCodeOffline = async (inputCode: string): Promise<Question[]> => {
+  const CANTIDAD_PREGUNTAS = 10;
   const code = normalizeCode(inputCode);
-  if (!code) {
-    console.warn(`❌ updateQuestionsByCode: Código inválido: "${inputCode}"`);
-    return null;
+  if (!code) return [];
+
+  const design = await getDesignByCode(code);
+  
+  if (!design || !design.questions || design.questions.length === 0) {
+    console.warn("No se encontraron preguntas locales para este código.");
+    return [];
   }
 
-  const design = getDesignByCode(code);
-  if (!design) {
-    console.warn(`❌ updateQuestionsByCode: No existe diseño para código "${code}"`);
-    return null;
+  if (design.questions.length < CANTIDAD_PREGUNTAS) {
+    console.error(`Pool insuficiente: Solo hay ${design.questions.length} preguntas.`);
   }
 
-  console.log(`📝 updateQuestionsByCode: Guardando ${questions.length} preguntas para código "${code}"`);
+  const shuffled = [...design.questions]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, CANTIDAD_PREGUNTAS);  
 
-  const saved = saveDesignConfig({
-    ...design,
-    questions,
-  });
-
-  queuePendingSyncByDesign(saved);
-  return saved;
+  return shuffled;
 };
 
 export const fetchDesignByCodeFromApi = async (inputCode: string) => {
@@ -409,7 +436,9 @@ export const insertQuestionsByCodeInApi = async (
   const inserted = parseQuestionsFromApi(
     data?.preguntas || data?.questions || normalizedQuestions,
   );
-  updateQuestionsByCode(code, inserted);
+
+  await updateQuestionsByCode(code, inserted); 
+
   return inserted;
 };
 
@@ -637,9 +666,14 @@ export const clearActiveDesignCode = () => {
   storage.removeItem(ACTIVE_CODE_KEY);
 };
 
-export const getActiveDesignConfig = () => {
+export const getActiveDesignConfig = async () => {
   const activeCode = getActiveDesignCode();
-  if (!activeCode) return null;
-
-  return getDesignByCode(activeCode);
+  if (activeCode) {
+    try {
+        await fetchQuestionsByCodeFromApi(activeCode); 
+        console.log("Diseño y preguntas sincronizados localmente.");
+    } catch (syncErr) {
+        console.warn("No se pudieron precargar las preguntas, se hará en el gameplay", syncErr);
+    }
+  }
 };
