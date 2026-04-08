@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { audioManager } from '../../audio';
 import { User } from '../../types';
+import { db } from '../db';
 
 interface RegisterProps {
   onSuccess: (user: User) => void;
@@ -23,40 +24,59 @@ const Register: React.FC<RegisterProps> = ({ onSuccess, onBack }) => {
     const baseURL = import.meta.env.VITE_API_URL;
 
     try {
-      const response = await fetch(`${baseURL}usuarios/acceso_directo/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-              identificador: formData.name,
-              email: formData.email,
-              telefono: formData.phone,
-              recibir_apostemos: formData.apostemos
-          }),
-      });
+        const response = await fetch(`${baseURL}usuarios/acceso_directo/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                identificador: formData.name,
+                email: formData.email,
+                telefono: formData.phone,
+                recibir_apostemos: formData.apostemos
+            }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (response.ok || response.status === 201) {
-        const userToSave = {
-          ...data,
-          name: data.identificador, 
-          avatarColor: '#f5821f',
-          avatarIcon: 'sports_soccer'
-        };
+        if (response.ok || response.status === 201) {
+            // 1. Mapear la respuesta al esquema de tbl_usuario de tu db.ts
+            const userForDb = {
+                identificador: data.identificador || formData.name,
+                correo: data.email || formData.email,
+                telefono: data.telefono || formData.phone,
+                estado: data.estado || 'activo',
+                fecha_creacion: new Date().toISOString(),
+                permisos: data.permisos || 'jugador',
+                codigo_diseno: getActiveDesignCode() || ''
+            };
 
-        localStorage.setItem('mundialista_user', JSON.stringify(userToSave));
-        audioManager.play('whistle');
-        onSuccess(userToSave);
-      } else {
-        const errorMsg = data.correo ? "Este correo ya está registrado" : 
-                         data.identificador ? "Este nombre ya está en uso" : 
-                         "Error al entrar al campo";
-        setError(errorMsg);
-      }
+            // 2. Guardar en Dexie (Offline-First)
+            // Usamos put para que si el usuario ya existe (basado en id_usuario si viene en data), lo actualice.
+            await db.tbl_usuario.put(userForDb);
+
+            // 3. Objeto para el estado de la App (incluyendo campos visuales)
+            const userToSave = {
+                ...userForDb,
+                name: userForDb.identificador, 
+                avatarColor: '#f5821f',
+                avatarIcon: 'sports_soccer'
+            };
+
+            // Mantener localStorage como respaldo rápido si lo deseas
+            localStorage.setItem('mundialista_user', JSON.stringify(userToSave));
+            
+            audioManager.play('whistle');
+            onSuccess(userToSave);
+        } else {
+            const errorMsg = data.correo ? "Este correo ya está registrado" : 
+                             data.identificador ? "Este nombre ya está en uso" : 
+                             "Error al entrar al campo";
+            setError(errorMsg);
+        }
     } catch (err) {
-      setError('El vestuario está cerrado (Error de conexión)');
+        console.error("Error en el registro:", err);
+        setError('El vestuario está cerrado (Error de conexión)');
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 

@@ -23,6 +23,7 @@ import {
   getDesignByCode,
   setActiveDesignCode,
 } from './components/adminDesignStore';
+import { db } from './db';
 
 const hexToRgbString = (hex: string) => {
   const normalized = hex.replace('#', '').trim();
@@ -70,7 +71,7 @@ const App: React.FC = () => {
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [secretTapCount, setSecretTapCount] = useState(0);
   const [activeDesignCode, setActiveDesignCodeState] = useState('');
-  const [activeDesign, setActiveDesignState] = useState(getActiveDesignConfig);
+  const [activeDesign, setActiveDesignState] = useState<DesignConfig | null>(null);
 
   const backgroundImage = activeDesign?.backgroundImage || '/images/fondo 3.jpg';
   const logoImage = activeDesign?.logoImage || '/images/icon general.svg';
@@ -105,7 +106,6 @@ const refreshUserData = async () => {
   }
 };
 
-// Refrescar cada vez que entramos al Home
 useEffect(() => {
   if (state.currentScreen === 'HOME' && state.user) {
     refreshUserData();
@@ -170,7 +170,7 @@ useEffect(() => {
         questions: data.preguntas,
         rondaId: data.ronda_id,
         pointsPerQuestion: Number(data.puntos_categoria) || 150,
-        timeLimit: Number(data.tiempo_categoria) || 10, // <-- Capturamos el tiempo de la DB
+        timeLimit: Number(data.tiempo_categoria) || 10,
         currentQuestionIndex: 0,
         score: 0,
         streak: 0,
@@ -189,6 +189,14 @@ useEffect(() => {
     setIsLoading(false);
   }
 };
+
+useEffect(() => {
+  const loadInitialDesign = async () => {
+    const config = await getActiveDesignConfig();
+    setActiveDesignState(config);
+  };
+  loadInitialDesign();
+}, []);
 
   const handleAnswer = (isCorrect: boolean) => {
       audioManager.play(isCorrect ? 'correct' : 'incorrect');
@@ -293,25 +301,25 @@ useEffect(() => {
     setState((prev) => ({ ...prev, currentScreen: 'MENU_CONTROL' }));
   };
 
-  const handleApplyDesignCode = (inputCode: string) => {
+  const handleApplyDesignCode = async (inputCode: string) => { 
     const code = inputCode.trim().toUpperCase();
 
     if (!code) {
       clearActiveDesignCode();
       setActiveDesignCodeState('');
       setActiveDesignState(null);
-      return { ok: true, message: 'Diseno por defecto aplicado.' };
+      return { ok: true, message: 'Diseño por defecto aplicado.' };
     }
 
-    const design = getDesignByCode(code);
+    const design = await getDesignByCode(code);
     if (!design) {
-      return { ok: false, message: 'Codigo no valido. Se mantiene el diseno actual.' };
+      return { ok: false, message: 'Código no válido. Se mantiene el diseño actual.' };
     }
 
     setActiveDesignCode(code);
     setActiveDesignCodeState(code);
     setActiveDesignState(design);
-    return { ok: true, message: `Diseno ${code} aplicado globalmente.` };
+    return { ok: true, message: `Diseño ${code} aplicado globalmente.` };
   };
 
   const handleSecretAdminTap = () => {
@@ -339,30 +347,84 @@ useEffect(() => {
 
   const handleRegisterAndStart = async (data: { nombre: string; email: string; telefono: string; apostemos: boolean }) => {
     const baseURL = import.meta.env.VITE_API_URL;
-    const response = await fetch(`${baseURL}usuarios/acceso_directo/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        identificador: data.nombre,
-        email: data.email,
-        telefono: data.telefono,
-        recibir_apostemos: data.apostemos,
-        ...(activeDesignCode ? { codigo_diseno: activeDesignCode } : {}),
-      }),
-    });
-    const result = await response.json();
-    if (response.ok || response.status === 201) {
-      const userToSave = { ...result, name: result.identificador, avatarColor: '#f5821f', avatarIcon: 'sports_soccer' };
-      localStorage.setItem('mundialista_user', JSON.stringify(userToSave));
-      audioManager.play('whistle');
-      setState(prev => ({ ...prev, user: userToSave, currentScreen: 'GAMEPLAY' }));
-      await startGame(userToSave.id_usuarios);
-    } else {
-      const msg = result.correo ? 'Este correo ya está registrado' :
-                  result.identificador ? 'Este nombre ya está en uso' :
-                  'Error al registrarse';
-      throw new Error(msg);
+    
+    const userPayload = {
+      identificador: data.nombre,
+      email: data.email,
+      telefono: data.telefono,
+      recibir_apostemos: data.apostemos,
+      ...(activeDesignCode ? { codigo_diseno: activeDesignCode } : {}),
+    };
+
+    try {
+      const response = await fetch(`${baseURL}usuarios/acceso_directo/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userPayload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok || response.status === 201) {
+        const userToSave = { 
+          ...result, 
+          name: result.identificador, 
+          avatarColor: '#f5821f', 
+          avatarIcon: 'sports_soccer' 
+        };
+
+        localStorage.setItem('mundialista_user', JSON.stringify(userToSave));
+        
+        await db.tbl_usuario.put({
+          ...userToSave,
+          id_usuario: result.id_usuarios,
+          estado: 'sincronizado' 
+        });
+
+        audioManager.play('whistle');
+        setState(prev => ({ ...prev, user: userToSave, currentScreen: 'GAMEPLAY' }));
+        await startGame(userToSave.id_usuarios);
+
+      } else {
+        const msg = result.correo ? 'Este correo ya está registrado' :
+                    result.identificador ? 'Este nombre ya está en uso' :
+                    'Error al registrarse';
+        throw new Error(msg);
+      }
+
+    } catch (error: any) {
+      if (error.name === 'TypeError' || error.message === 'Failed to fetch') {
+        console.warn("Sin conexión. Guardando usuario localmente...");
+
+        const localId = await db.tbl_usuario.add({
+          identificador: data.nombre,
+          correo: data.email,
+          telefono: data.telefono,
+          estado: 'pendiente',
+          fecha_creacion: new Date().toISOString()
+        });
+
+        const localUser = {
+          id_usuarios: localId,
+          identificador: data.nombre,
+          name: data.nombre,
+          avatarColor: '#f5821f',
+          avatarIcon: 'sports_soccer',
+          isOffline: true 
+        };
+
+        finalizeLogin(localUser);
+      } else {
+        alert(error.message);
+      }
     }
+  };
+
+  const finalizeLogin = (userToSave: any) => {
+    localStorage.setItem('mundialista_user', JSON.stringify(userToSave));
+    audioManager.play('whistle');
+    setState(prev => ({ ...prev, user: userToSave, currentScreen: 'GAMEPLAY' }));
+    startGame(userToSave.id_usuarios);
   };
 
   const handleLogout = () => {
