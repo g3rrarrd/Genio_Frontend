@@ -163,7 +163,6 @@ const handleUserInteraction = async (overrideUserId?: number) => {
       const data = await response.json();
 
       if (response.ok) {
-        // Éxito: Sincronizamos con local para el futuro
         if (activeCode && data.preguntas) {
           await updateQuestionsByCode(activeCode, data.preguntas);
         }
@@ -183,13 +182,12 @@ const handleUserInteraction = async (overrideUserId?: number) => {
           answersHistory: []
         }));
       } else {
-        throw new Error(data.error || "Error al iniciar el juego");
+        throw new Error(data.error || "Error al iniciar el juego en usuario");
       }
     } catch (error) {
         console.warn("Fallo de red, iniciando modo offline con lógica local...");
 
         if (activeCode) {
-            // Usamos la nueva función con lógica aleatoria
             const localQuestions = await getQuestionsByCodeOffline(activeCode);
 
             if (localQuestions.length >= 10) {
@@ -225,6 +223,7 @@ const handleUserInteraction = async (overrideUserId?: number) => {
 
     const categoryId = 1;
     const userId = overrideUserId ?? state.user?.id_usuarios;
+    const activeCode = getActiveDesignCode();
 
     if (!userId) {
       setState(prev => ({ ...prev, currentScreen: 'AUTH' }));
@@ -245,28 +244,27 @@ const handleUserInteraction = async (overrideUserId?: number) => {
 
       const data = await response.json();
 
-    if (response.ok) {
-      setState(prev => ({
-        ...prev,
-        currentScreen: 'GAMEPLAY',
-        difficulty: 'Banca',
-        questions: data.preguntas,
-        rondaId: data.ronda_id,
-        pointsPerQuestion: Number(data.puntos_categoria) || 150,
-        timeLimit: Number(data.tiempo_categoria) || 10,
-        currentQuestionIndex: 0,
-        score: 0,
-        streak: 0,
-        startTime: Date.now(),
-        answersHistory: []
-      }));
-    } else{
-      alert(data.error || "Error al iniciar el juego");
-    }
+      if (response.ok) {
+        setState(prev => ({
+          ...prev,
+          currentScreen: 'GAMEPLAY',
+          difficulty: 'Banca',
+          questions: data.preguntas,
+          rondaId: data.ronda_id,
+          pointsPerQuestion: Number(data.puntos_categoria) || 150,
+          timeLimit: Number(data.tiempo_categoria) || 10,
+          currentQuestionIndex: 0,
+          score: 0,
+          streak: 0,
+          startTime: Date.now(),
+          answersHistory: []
+        }));
+      } else{
+        alert(data.error || "Error al iniciar el juego");
+      }
   }
   catch(error){
-    console.error("Error al iniciar el juego:", error);
-    alert("Error al iniciar el juego. Por favor, inténtalo de nuevo.");
+        console.warn("Fallo de red, iniciando modo offline con lógica local...");
   }
   finally {
     setIsLoading(false);

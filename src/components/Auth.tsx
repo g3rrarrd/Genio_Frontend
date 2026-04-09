@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { audioManager } from '../../audio';
 import { User } from '../../types';
 import { db } from '../db';
+import { getActiveDesignCode } from './adminDesignStore';
 
 interface RegisterProps {
   onSuccess: (user: User) => void;

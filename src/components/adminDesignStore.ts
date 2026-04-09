@@ -279,11 +279,11 @@ const queuePendingSyncByDesign = (design: DesignConfig) => {
   writePendingSync(next);
 };
 
-export const updateQuestionsByCode = async (inputCode: string, questions: Question[]) => {
+export const updateQuestionsByCode = (inputCode: string, questions: Question[]) => {
   const code = normalizeCode(inputCode);
   if (!code) return null;
 
-  let design = await getDesignByCode(code);
+  let design = getDesignByCode(code);
   
   if (!design) {
     design = {
@@ -304,25 +304,25 @@ export const updateQuestionsByCode = async (inputCode: string, questions: Questi
     updatedAt: Date.now(),
   };
 
-  return await saveDesignConfig(updatedDesign);
+  return saveDesignConfig(updatedDesign);
 };
 
-export const getQuestionsByCode = async (inputCode: string): Promise<Question[]> => {
+export const getQuestionsByCode = (inputCode: string): Question[] => {
   const code = normalizeCode(inputCode);
   if (!code) return [];
 
-  const design = await getDesignByCode(code);
+  const design = getDesignByCode(code);
   if (!design) return [];
 
   return Array.isArray(design.questions) ? design.questions : [];
 };
 
-export const getQuestionsByCodeOffline = async (inputCode: string): Promise<Question[]> => {
+export const getQuestionsByCodeOffline = (inputCode: string): Question[] => {
   const CANTIDAD_PREGUNTAS = 10;
   const code = normalizeCode(inputCode);
   if (!code) return [];
 
-  const design = await getDesignByCode(code);
+  const design = getDesignByCode(code);
   
   if (!design || !design.questions || design.questions.length === 0) {
     console.warn("No se encontraron preguntas locales para este código.");
@@ -666,14 +666,14 @@ export const clearActiveDesignCode = () => {
   storage.removeItem(ACTIVE_CODE_KEY);
 };
 
-export const getActiveDesignConfig = async () => {
+export const getActiveDesignConfig = (): DesignConfig | null => {
   const activeCode = getActiveDesignCode();
+  if (!activeCode) return null;
+  const design = getDesignByCode(activeCode);
   if (activeCode) {
-    try {
-        await fetchQuestionsByCodeFromApi(activeCode); 
-        console.log("Diseño y preguntas sincronizados localmente.");
-    } catch (syncErr) {
-        console.warn("No se pudieron precargar las preguntas, se hará en el gameplay", syncErr);
-    }
+    fetchQuestionsByCodeFromApi(activeCode)
+      .then((questions) => { if (questions.length > 0) updateQuestionsByCode(activeCode, questions); })
+      .catch(() => {});
   }
+  return design;
 };
