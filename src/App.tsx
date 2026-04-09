@@ -101,6 +101,8 @@ const refreshUserData = async () => {
     if (response.ok) {
       setState(prev => ({ ...prev, user: freshData }));
       localStorage.setItem('mundialista_user', JSON.stringify(freshData));
+    }else {
+      setState(prev => ({ ...prev, user: null, currentScreen: 'AUTH' }));
     }
   } catch (error) {
     console.error("Error refrescando usuario", error);
@@ -134,7 +136,7 @@ useEffect(() => {
   }
 }, [adminUnlocked, state.currentScreen]);
 
-const handleUserInteraction = async (overrideUserId?: number) => {
+  const startGame = async (overrideUserId?: number) => {
     audioManager.play('click');
     setIsLoading(true);
 
@@ -143,47 +145,47 @@ const handleUserInteraction = async (overrideUserId?: number) => {
     const activeCode = getActiveDesignCode();
 
     if (!userId) {
-      setState(prev => ({ ...prev, currentScreen: 'AUTH' }));
-      setIsLoading(false);
-      return;
+        setState(prev => ({ ...prev, currentScreen: 'AUTH' }));
+        setIsLoading(false);
+        return;
     }
 
     try {
-      const baseURL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${baseURL}rondas/iniciar_juego/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_usuario: userId,
-          id_categoria: categoryId,
-          ...(activeCode ? { codigo: activeCode } : {}),
-        }),
-      });
+        const baseURL = import.meta.env.VITE_API_URL;
+        const response = await fetch(`${baseURL}rondas/iniciar_juego/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id_usuario: userId,
+                id_categoria: categoryId,
+                ...(activeCode ? { codigo: activeCode } : {}),
+            }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (response.ok) {
-        if (activeCode && data.preguntas) {
-          await updateQuestionsByCode(activeCode, data.preguntas);
+        if (response.ok) {
+            if (activeCode && data.preguntas) {
+                await updateQuestionsByCode(activeCode, data.preguntas);
+            }
+
+            setState(prev => ({
+                ...prev,
+                currentScreen: 'GAMEPLAY',
+                difficulty: 'Banca',
+                questions: data.preguntas,
+                rondaId: data.ronda_id,
+                pointsPerQuestion: Number(data.puntos_categoria) || 150,
+                timeLimit: Number(data.tiempo_categoria) || 10,
+                currentQuestionIndex: 0,
+                score: 0,
+                streak: 0,
+                startTime: Date.now(),
+                answersHistory: []
+            }));
+        } else {
+            throw new Error(data.error || "Error al iniciar el juego");
         }
-
-        setState(prev => ({
-          ...prev,
-          currentScreen: 'GAMEPLAY',
-          difficulty: 'Banca',
-          questions: data.preguntas,
-          rondaId: data.ronda_id,
-          pointsPerQuestion: Number(data.puntos_categoria) || 150,
-          timeLimit: Number(data.tiempo_categoria) || 10,
-          currentQuestionIndex: 0,
-          score: 0,
-          streak: 0,
-          startTime: Date.now(),
-          answersHistory: []
-        }));
-      } else {
-        throw new Error(data.error || "Error al iniciar el juego en usuario");
-      }
     } catch (error) {
         console.warn("Fallo de red, iniciando modo offline con lógica local...");
 
@@ -195,8 +197,8 @@ const handleUserInteraction = async (overrideUserId?: number) => {
                     ...prev,
                     currentScreen: 'GAMEPLAY',
                     difficulty: 'Banca',
-                    questions: localQuestions, // Ya vienen mezcladas y limitadas a 10
-                    rondaId: 0, // 0 indica ronda pendiente de sincronizar
+                    questions: localQuestions,
+                    rondaId: 0, 
                     pointsPerQuestion: 150,
                     timeLimit: 10,
                     currentQuestionIndex: 0,
@@ -212,64 +214,9 @@ const handleUserInteraction = async (overrideUserId?: number) => {
             alert("Error de conexión y no hay un código de diseño activo.");
         }
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
-
-  const startGame = async (overrideUserId?: number) => {
-    handleUserInteraction();
-    audioManager.play('click');
-    setIsLoading(true);
-
-    const categoryId = 1;
-    const userId = overrideUserId ?? state.user?.id_usuarios;
-    const activeCode = getActiveDesignCode();
-
-    if (!userId) {
-      setState(prev => ({ ...prev, currentScreen: 'AUTH' }));
-      return;
-    }
-
-    try {
-      const baseURL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${baseURL}rondas/iniciar_juego/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_usuario: userId,
-          id_categoria: categoryId,
-          ...(activeDesignCode ? { codigo: activeDesignCode } : {}),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setState(prev => ({
-          ...prev,
-          currentScreen: 'GAMEPLAY',
-          difficulty: 'Banca',
-          questions: data.preguntas,
-          rondaId: data.ronda_id,
-          pointsPerQuestion: Number(data.puntos_categoria) || 150,
-          timeLimit: Number(data.tiempo_categoria) || 10,
-          currentQuestionIndex: 0,
-          score: 0,
-          streak: 0,
-          startTime: Date.now(),
-          answersHistory: []
-        }));
-      } else{
-        alert(data.error || "Error al iniciar el juego");
-      }
-  }
-  catch(error){
-        console.warn("Fallo de red, iniciando modo offline con lógica local...");
-  }
-  finally {
-    setIsLoading(false);
-  }
-};
 
 useEffect(() => {
   const loadInitialDesign = async () => {
@@ -564,9 +511,6 @@ useEffect(() => {
   return (
     <div 
       className="design-scope min-h-[100dvh] w-full bg-background-dark text-white font-sans soccer-pattern overflow-x-hidden overflow-y-auto relative transition-all duration-500"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) handleUserInteraction();
-      }}
       style={{
         '--design-primary': primaryGlow,
         '--design-primary-rgb': primaryRgb,
@@ -584,13 +528,13 @@ useEffect(() => {
         <Home 
           user={state.user}
           onStart={() => { 
-            handleUserInteraction();
+            startGame();
             audioManager.play('click'); 
             startGame();
           }} 
           onLogin={goToAuth}
           onProfile={goToProfile}
-          onRegisterAndStart={handleRegisterAndStart}
+          onRegisterAndStart={startGame}
           isSyncing={isSyncingUser}
           logoImage={logoImage}
           appTitle={appTitle}

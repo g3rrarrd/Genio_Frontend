@@ -43,7 +43,7 @@ const Gameplay: React.FC<GameplayProps> = ({ question, index, total, streak, dif
   const [isDragging, setIsDragging] = useState(false);
   const touchStart = useRef({ x: 0, y: 0 });
   
-  const SWIPE_THRESHOLD = 150; // Umbral aumentado para pantalla física grande
+  const SWIPE_THRESHOLD = 150; 
   const timeProgress = (timeLeft / initialTime) * 100;
 
   useEffect(() => {
