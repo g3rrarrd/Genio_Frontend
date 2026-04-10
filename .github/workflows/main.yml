@@ -36,7 +36,7 @@ jobs:
           registryPassword: ${{ secrets.CONTENEDORGENIO_REGISTRY_PASSWORD }}
           containerAppName: acageniomundialistafrontend
           resourceGroup: rg-bi-cac-dev
-          imageToBuild: genio.azurecr.io/contenedorgenio:${{ github.sha }}
+          imageToBuild: acrgeniomundialista.azurecr.io/acageniomundialistafrontend:${{ github.sha }}
           # PASO CRÍTICO: Inyectar la variable de entorno como argumento de construcción
           buildArguments: |
             VITE_API_URL=${{ secrets.VITE_API_URL }}
