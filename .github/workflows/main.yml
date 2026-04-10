@@ -34,8 +34,8 @@ jobs:
           registryUrl: acrgeniomundialista.azurecr.io
           registryUsername: ${{ secrets.CONTENEDORGENIO_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.CONTENEDORGENIO_REGISTRY_PASSWORD }}
-          containerAppName: contenedorgenio
-          resourceGroup: NetworkWatcherRG
+          containerAppName: contenedorgeniofrontend
+          resourceGroup: rg-bi-cac-dev
           imageToBuild: genio.azurecr.io/contenedorgenio:${{ github.sha }}
           # PASO CRÍTICO: Inyectar la variable de entorno como argumento de construcción
           buildArguments: |
